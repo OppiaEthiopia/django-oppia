@@ -1,0 +1,145 @@
+[
+{
+    "model": "profile.customfield",
+    "pk": "gender",
+    "fields": {
+        "label": "Gender",
+        "required": false,
+        "order": 9,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-05-17T06:50:57.259Z",
+        "modified": "2020-05-19T05:22:34.202Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "org_facility_name",
+    "fields": {
+        "label": "Name of health facility or organization",
+        "required": false,
+        "order": 8,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-05-17T06:25:28.637Z",
+        "modified": "2020-05-19T05:22:27.882Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "place_of_work",
+    "fields": {
+        "label": "Primary place of work",
+        "required": false,
+        "order": 7,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-05-17T06:24:51.706Z",
+        "modified": "2020-05-19T05:22:20.971Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "profession",
+    "fields": {
+        "label": "Profession",
+        "required": false,
+        "order": 5,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-05-11T11:13:41.910Z",
+        "modified": "2020-05-19T05:22:05.974Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "profession_other",
+    "fields": {
+        "label": "Please specify",
+        "required": false,
+        "order": 6,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-05-17T06:22:59.462Z",
+        "modified": "2020-05-19T05:22:14.310Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "referral",
+    "fields": {
+        "label": "Referred from",
+        "required": false,
+        "order": 0,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-11-24T18:35:20.034Z",
+        "modified": "2020-11-24T18:35:20.034Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "region",
+    "fields": {
+        "label": "Region",
+        "required": false,
+        "order": 1,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-05-11T10:14:56.735Z",
+        "modified": "2020-05-11T10:14:56.735Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "region_other",
+    "fields": {
+        "label": "Region (other)",
+        "required": false,
+        "order": 2,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-05-19T05:21:37.777Z",
+        "modified": "2020-05-19T05:21:37.777Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "sub_city",
+    "fields": {
+        "label": "Sub-City",
+        "required": false,
+        "order": 3,
+        "helper_text": "if region is Addis Ababa",
+        "type": "str",
+        "created": "2020-05-11T10:15:35.452Z",
+        "modified": "2020-05-19T05:21:48.513Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "woreda",
+    "fields": {
+        "label": "Woreda",
+        "required": false,
+        "order": 4,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-05-11T10:16:18.917Z",
+        "modified": "2020-05-19T05:21:56.215Z"
+    }
+},
+{
+    "model": "profile.customfield",
+    "pk": "work_area",
+    "fields": {
+        "label": "Work area",
+        "required": false,
+        "order": 0,
+        "helper_text": "",
+        "type": "str",
+        "created": "2020-11-24T18:34:53.506Z",
+        "modified": "2020-11-24T18:34:53.506Z"
+    }
+}
+]
