@@ -4,7 +4,10 @@ import oppia
 
 from django.conf import settings
 from oppia.models import Points, Award, BadgeMethod
+
+from reports.signals import dashboard_accessed
 from reports.menu import menu_reports
+
 from settings import constants
 from settings.models import SettingProperties
 
@@ -90,6 +93,12 @@ def get_settings(request):
         if last_summary_cron_date < start_date:
             cron_warning = True
 
+    server_registered = SettingProperties.get_bool(
+            constants.OPPIA_SERVER_REGISTERED, False)
+
+    email_certificates = SettingProperties.get_bool(
+            constants.OPPIA_EMAIL_CERTIFICATES, False)
+
     return {
         'OPPIA_ALLOW_SELF_REGISTRATION': self_register,
         'OPPIA_GOOGLE_ANALYTICS_ENABLED': ga_enabled,
@@ -100,4 +109,16 @@ def get_settings(request):
         'DEBUG': settings.DEBUG,
         'CRON_WARNING': cron_warning,
         'COURSE_COMPLETE_BADGE_CRITERIA': badge_award_method,
-        'COURSE_COMPLETE_BADGE_CRITERIA_PERCENT': badge_award_method_percent}
+        'COURSE_COMPLETE_BADGE_CRITERIA_PERCENT': badge_award_method_percent,
+        'SERVER_REGISTERED': server_registered,
+        'OPPIA_EMAIL_CERTIFICATES': email_certificates}
+
+
+def add_dashboard_access_log(request):
+    if request.POST:
+        dashboard_accessed.send(sender=None, request=request, data=request.POST)
+    else:
+        dashboard_accessed.send(sender=None, request=request)
+        
+    return {
+        'dashboard_access_added': True }
