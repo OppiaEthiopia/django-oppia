@@ -55,12 +55,12 @@ class Command(BaseCommand):
                         print("%s: %s updated to %s" % (row.get("username"), cf.id, row.get(cf.id)))
         
         # Fix participant ids
-        upcfs = UserProfileCustomField.objects.filter(key_name="participant_id")
-        for participant in upcfs:
-            if participant.value_str is not None and len(participant.value_str) < 4:
-                participant.value_str = str(participant.value_str).zfill(4)
-                participant.save()
-                print("%s: participant_id updated to %s" % (participant.user.username, participant.value_str))
+        #upcfs = UserProfileCustomField.objects.filter(key_name="participant_id")
+        #for participant in upcfs:
+        #    if participant.value_str is not None and len(participant.value_str) < 4:
+        #        participant.value_str = str(participant.value_str).zfill(4)
+        #        participant.save()
+        #        print("%s: participant_id updated to %s" % (participant.user.username, participant.value_str))
                 
                 
                 
