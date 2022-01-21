@@ -23,6 +23,7 @@ from quiz.api.resources import QuizAttemptResource
 
 from django.views.generic import TemplateView
 
+from reports.signals import dashboard_accessed
 from settings import constants
 from settings.models import SettingProperties
 
@@ -205,10 +206,19 @@ def post_activitylog(request):
     if request.method != 'PATCH':
         return HttpResponse(status=405)
 
-    json.loads(request.body)
+    json_data = json.loads(request.body)
 
     messages_delegate = MessagesDelegate(request)
     success = process_activitylog(messages_delegate, request.body)
+
+    if 'users' in json_data:
+        for user in json_data['users']:
+            del user['trackers']
+            del user['quizresponses']
+            del user['points']
+            u = User.objects.filter(username=user['username']).first()
+            dashboard_accessed.send(sender=None, user=u, request=request, data=user)
+
     if success:
         return HttpResponse()
     else:

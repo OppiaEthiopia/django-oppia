@@ -7,12 +7,14 @@ from reports.models import DashboardAccessLog
 dashboard_accessed = Signal(providing_args=["request", "data"])
 
 
-def dashboard_accessed_callback(sender, **kwargs):
+def dashboard_accessed_callback(sender, user=None, **kwargs):
     request = kwargs.get('request')
     data = kwargs.get('data')
 
-    if request.path.startswith("/admin") or request.path.startswith("/api"):
+    #if request.path.startswith("/admin") or request.path.startswith("/api"):
+    if request.path.startswith("/admin"):
         return
+
 
     data_to_store = {}
     if data:
@@ -25,8 +27,11 @@ def dashboard_accessed_callback(sender, **kwargs):
                 data_to_store[d] = data[d]
 
     if request.user.is_authenticated:
+        user = request.user
+
+    if user:
         dal = DashboardAccessLog()
-        dal.user = request.user
+        dal.user = user
         dal.url = request.path
         dal.data = json.dumps(data_to_store)
         dal.ip = request.META.get('REMOTE_ADDR', oppia.DEFAULT_IP_ADDRESS)

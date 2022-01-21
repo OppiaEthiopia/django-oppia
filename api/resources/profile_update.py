@@ -11,6 +11,7 @@ from api.serializers import UserJSONSerializer
 from api.utils import check_required_params
 from profile.forms import ProfileForm
 from profile.models import UserProfile, CustomField
+from reports.signals import dashboard_accessed
 
 
 class ProfileUpdateResource(ModelResource):
@@ -52,6 +53,11 @@ class ProfileUpdateResource(ModelResource):
                 pass
 
         profile_form = ProfileForm(data=data)
+
+        dashboard_accessed.send(sender=None,
+                                request=bundle.request,
+                                data=bundle.data)
+
         if not profile_form.is_valid():
             error_str = ""
             for key, value in profile_form.errors.items():
