@@ -83,7 +83,8 @@ def process_uploaded_trackers(messages_delegate, trackers, user, user_api_key):
         if success:
             messages_delegate.info(
                           _(u"Tracker activity %(uuid)s for %(username)s added"
-                            % {'username': user.username, 'uuid': tracker.get('digest')}))
+                            % {'username': user.username,
+                               'uuid': tracker.get('digest')}))
         else:
             messages_delegate.warning( _(
                 u"Already uploaded: tracker activity %(uuid)s for %(username)s" % {'username': user.username,
@@ -106,20 +107,22 @@ def process_uploaded_quizresponses(messages_delegate,
                                      % {'username': user.username}))
         else:
             messages_delegate.info(
-                          _(u"Already uploaded: quiz attempt for %(username)s added" % {'username': user.username}))
+                _(u"Already uploaded: quiz attempt for %(username)s added" %
+                  {'username': user.username}))
 
 
 def process_uploaded_file(messages_delegate, json_data):
     if 'users' in json_data:
         for user in json_data['users']:
             username = user['username']
-            req_user, user_profile = get_user_from_uploaded_log(messages_delegate, user)
+            req_user, user_profile = \
+                get_user_from_uploaded_log(messages_delegate, user)
 
-            if 'job_title' in user and user['job_title'] != '':
+            if 'job_title' in user and user['job_title']:
                 user_profile.job_title = user['job_title']
-            if 'organisation' in user and user['organisation'] != '':
+            if 'organisation' in user and user['organisation']:
                 user_profile.organisation = user['organisation']
-            if 'phoneno' in user and user['phoneno'] != '':
+            if 'phoneno' in user and user['phoneno']:
                 user_profile.phone_number = user['phoneno']
             user_profile.save()
             user_profile.update_customfields(user)
@@ -165,7 +168,8 @@ def get_user_from_uploaded_log(messages_delegate, user):
         # User was registered offline, we create a new one
         req_user = User(
             username=username,
-            email=user['email'] if user['email'] is not None else '',
+            email=user['email'] if 'email' in user
+            and user['email'] is not None else '',
         )
 
         req_user.password = user['password'] \
@@ -176,8 +180,9 @@ def get_user_from_uploaded_log(messages_delegate, user):
 
         user_profile = UserProfile(user=req_user)
         messages_delegate.warning(
-                         _(u"%(username)s did not exist previously, and was created." % {'username': username}),
-                         'danger')
+            _(u"%(username)s did not exist previously, and was created."
+              % {'username': username}),
+            'danger')
     else:
         req_user = User.objects.filter(username=username).first()
         user_profile, created = UserProfile.objects.get_or_create(
@@ -189,13 +194,15 @@ def get_user_from_uploaded_log(messages_delegate, user):
 def validate_server(messages_delegate, data):
 
     if 'server' in data:
-        server_url = SettingProperties.get_string(constants.OPPIA_HOSTNAME, "localhost")
+        server_url = SettingProperties.get_string(constants.OPPIA_HOSTNAME,
+                                                  "localhost")
         if data['server'].startswith(server_url):
             return True
         else:
             print('Different tracker server: {}'.format(data['server']))
             messages_delegate.warning(_(
-                "The server in the activity log file does not match with the current one"))
+                "The server in the activity log file does not match with the \
+                current one"))
             return False
     else:
         messages_delegate.warning(_(
@@ -231,12 +238,15 @@ def post_activitylog(request):
         if post_user:
             break
 
-    # If none of the users included exists in the server, we don't save the file
+    # If none of the users included exists in the server, we don't save the
+    # file
     if post_user:
         username = users[0] if len(users) == 1 else 'activity'
-        filename = '{}_{}.json'.format(username, timezone.now().strftime('%Y%m%d%H%M%S'))
+        filename = '{}_{}.json'.format(username,
+                                       timezone.now().strftime('%Y%m%d%H%M%S'))
         uploaded_activity_log = UploadedActivityLog(create_user=post_user)
-        uploaded_activity_log.file.save(name=filename, content=ContentFile(request.body))
+        uploaded_activity_log.file.save(name=filename,
+                                        content=ContentFile(request.body))
         uploaded_activity_log.save()
 
     if success:
