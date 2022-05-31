@@ -182,15 +182,6 @@ def post_activitylog(request):
         return HttpResponse(status=405)
 
     json_data = json.loads(request.body)
-
-    if 'users' in json_data:
-        for user in json_data['users']:
-            del user['trackers']
-            del user['quizresponses']
-            del user['points']
-            u = User.objects.filter(username=user['username']).first()
-            dashboard_accessed.send(sender=None, user=u, request=request, data=user)
-
     messages_delegate = MessagesDelegate(request)
     success = process_activitylog(messages_delegate, request.body)
 
