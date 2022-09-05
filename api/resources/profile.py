@@ -115,6 +115,7 @@ class ProfileUpdateResource(ModelResource):
         bundle = self.process_profile_update(bundle)
         return bundle
 
+
 class UserCohortsResource(Resource):
 
     class Meta:
