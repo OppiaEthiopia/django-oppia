@@ -735,10 +735,10 @@ def update_quiz_questions(quiz, quiz_obj):
 
         if not question:
             try:
-                question_id = QuestionProps.objects.get(
+                question_id = QuestionProps.objects.filter(
                 name="moodle_question_id",
-                value=q['question']['props']['moodle_question_id']).question_id
-                question = Question.objects.filter(id=question_id)
+                value=q['question']['props']['moodle_question_id']).order_by('-id').first().question_id
+                question = Question.objects.filter(id=question_id, quiz=quiz)
             except QuestionProps.DoesNotExist:
                 continue
 
@@ -750,7 +750,7 @@ def update_quiz_questions(quiz, quiz_obj):
         else:
             question = question.filter(quizquestion__order=q['order']).first()
 
-        question.type = q['question']['type'],
+        question.type = q['question']['type']
         question.title = clean_lang_dict(q['question']['title'])
         question.save()
 
