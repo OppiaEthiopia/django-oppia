@@ -58,11 +58,6 @@ class ProfileUpdateResource(ModelResource):
                 pass
 
         profile_form = ProfileForm(data=data)
-
-        dashboard_accessed.send(sender=None,
-                                request=bundle.request,
-                                data=bundle.data)
-
         if not profile_form.is_valid():
             error_str = ""
             for key, value in profile_form.errors.items():
