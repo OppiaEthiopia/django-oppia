@@ -8,7 +8,7 @@ import xmltodict
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Q
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.urls.conf import re_path
 from django.utils.translation import gettext_lazy as _
 from tastypie import fields
@@ -79,7 +79,10 @@ class CourseResource(ModelResource):
                 .order_by('-priority', 'title')
         else:
             return Course.objects.filter(CourseFilter.IS_NOT_ARCHIVED) \
-                .filter(CourseFilter.IS_NOT_DRAFT | (CourseFilter.IS_DRAFT & Q(user=request.user))) \
+                .filter(CourseFilter.IS_NOT_DRAFT |
+                        (CourseFilter.IS_DRAFT & Q(user=request.user)) |
+                        (CourseFilter.IS_DRAFT & Q(coursepermissions__user=request.user))) \
+                .distinct() \
                 .order_by('-priority', 'title')
 
     def prepend_urls(self):
@@ -137,8 +140,7 @@ class CourseResource(ModelResource):
         course = self.get_course(request, **kwargs)
 
         file_to_download = course.getAbsPath()
-        has_completed_trackers = Tracker.has_completed_trackers(course,
-                                                                request.user)
+        has_completed_trackers = Tracker.has_completed_trackers(course, request.user)
 
         try:
             if has_completed_trackers:
@@ -150,17 +152,16 @@ class CourseResource(ModelResource):
                 course_zip = zipfile.ZipFile(file_to_download, 'a')
                 if has_completed_trackers:
                     course_zip.writestr(course.shortname + "/tracker.xml",
-                                        Tracker.to_xml_string(course,
-                                                              request.user))
+                                        Tracker.to_xml_string(course, request.user))
                 course_zip.close()
+            elif settings.OPPIA_EXTERNAL_STORAGE:
+                return HttpResponseRedirect(settings.OPPIA_EXTERNAL_STORAGE_COURSE_URL + course.filename)
 
             binary_file = open(file_to_download, 'rb')
-            response = HttpResponse(binary_file.read(),
-                                    content_type='application/zip')
+            response = HttpResponse(binary_file.read(), content_type='application/zip')
             binary_file.close()
             response['Content-Length'] = os.path.getsize(file_to_download)
-            response['Content-Disposition'] = \
-                'attachment; filename="%s"' % (course.filename)
+            response['Content-Disposition'] = 'attachment; filename="%s"' % (course.filename)
         except IOError:
             raise Http404(STR_COURSE_NOT_FOUND)
 
@@ -174,11 +175,9 @@ class CourseResource(ModelResource):
                             content_type='text/xml')
 
     def dehydrate(self, bundle):
-        bundle.data['url'] = bundle.request.build_absolute_uri(
-            bundle.data['resource_uri'] + 'download/')
+        bundle.data['url'] = bundle.request.build_absolute_uri(bundle.data['resource_uri'] + 'download/')
 
-        # make sure title is shown as json object (not string representation \
-        # of one)
+        # make sure title is shown as json object (not string representation of one)
         bundle.data['title'] = json.loads(bundle.data['title'])
 
         try:

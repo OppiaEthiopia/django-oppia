@@ -13,7 +13,7 @@ class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
         return self.request.user.is_staff
 
 
-class ReadOnlyAdminMixin:
+class ReadOnlyAdminMixin(LoginRequiredMixin):
     def has_add_permission(self, request):
         return False
 
