@@ -82,3 +82,4 @@ class QuizAttemptDetail(CanViewUserDetailsMixin, DetailView):
         context['course'] = Course.objects.get(pk=self.kwargs['course_id'])
 
         return context
+
