@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load display_functions %}
+{% load sort_link %}
+{% load static %}
+
+{% block extra_head_title %}
+	{{ view_user.first_name }} {{ view_user.last_name }} &gt; {{ course.title|title_lang:LANGUAGE_CODE }}
+{% endblock extra_head_title %}
+
+{% block header %}
+<div class="jumbotron mb-4 ">
+<h4><a href="{% url 'profile:user_activity' view_user.id %}">{{ view_user.first_name }} {{ view_user.last_name }}</a> <em class="material-icons md-18 ">arrow_forward_ios</em> {{ course.title|title_lang:LANGUAGE_CODE }}</h4>
+</div>
+{% endblock header %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row bg-primary">
+      <div class="col-12" style="background-color: rgba(255, 255, 255, 0.911); ">
+        <!-- Main content -->
+        <div class="invoice p-3 mb-3">
+          <!-- title row -->
+          <div class="row">
+            <div class="col-12" style="text-align: center; color: teal;">
+              <h4>
+                Blended IRT Learner Report ({% now "" %}): {{woreda}}
+              </h4>
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- info row -->
+          <div class="row invoice-info" style="border: solid teal; text-align: justify; ">
+            <div class="col-sm-3 invoice-col">
+              Name
+              <address>
+                <strong>{{ view_user.first_name }} {{ view_user.last_name }}</strong>
+              </address>
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-3 invoice-col">
+              Phone Number
+                <address>
+                  <strong>{{user_profile.phone_number}}</strong>
+                </address>
+              </div>
+            <!-- /.col -->
+            <div class="col-sm-3 invoice-col">
+              PHCU
+                <address>
+                  <strong>{{phcu}}</strong>
+                </address>
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-3 invoice-col">
+                Health Post
+                  <address>
+                    <strong>{{health_post}}</strong>
+                  </address>
+              </div>
+              <!-- /.col -->
+          </div>
+          <!-- /.row -->
+          <br>
+          <!-- Table row -->
+          <div class="row">
+            <!-- Left Column: Quizzes and Unit 1 & Unit 2 Results -->
+            <div class="col-6 table-responsive">
+                <!-- Quizzes and Feedback Section -->
+                {% if quizzes %}
+                <div class="table-responsive">
+                    <h5>{{ course.title|title_lang:LANGUAGE_CODE }}</h5>
+                    <table class="table table-striped sortable" style="border: solid; border-color: teal;">
+                        <thead>
+                            <tr>
+                                <td class="table-header">Knowlege/Skill Assessments</td>
+                                <td class="table-header">Result</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Quizzes -->
+                            {% for q in quizzes %}
+                                {% if "Survey Post" in q.quiz.section.title|title_lang:LANGUAGE_CODE %}
+                                    <tr>
+                                        <td>{{ q.quiz.title|title_lang:LANGUAGE_CODE }}</td>
+                                        <td>
+                                            {% if q.max_score > 0 %}
+                                               {{ q.max_score|floatformat:0 }}%
+                                            {% else %}
+                                                NA
+                                            {% endif %}
+                                            
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+        
+                            <!-- Feedback Attempts -->
+                            {% for attempt in feedback_attempts %}
+                                {% if "Skills-Post" in attempt.quiz.title|title_lang:LANGUAGE_CODE %}
+                                    <tr>
+                                        <td>{{ attempt.quiz.title|title_lang:LANGUAGE_CODE }}</td>
+                                        <td style="text-align: center;">
+                                            {% if attempt.get_score_percent > 0 %}
+                                               {{ attempt.get_score_percent }}%
+                                            {% else %}
+                                                NA
+                                            {% endif %}
+                                            
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+                <!-- Unit Sessions Results for Unit 1 and Unit 2 -->
+                <h5>Unit Sessions Quizzes Average Results</h5>
+                <div class="table-responsive">
+                    
+                            <table class="table table-striped sortable" style="border: solid; border-color: teal;">
+                                <thead>
+                                    <tr class="table-header">
+                                        {% for unit in unit_session_results %}
+                                                <td>{{ unit.unit }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        {% for unit in unit_session_results %}
+                                        
+                                        <td 
+                                        {% if unit.avg_score <= 75 %}
+                                            style="color:red;"
+                                        {% endif %}
+                                        >
+                                            {{ unit.avg_score|default:"N/A"|floatformat:0 }}%
+                                        </td>
+                                    
+                                        {% endfor %}
+                                    </tr>  
+                                </tbody>
+                            </table>
+                    
+                </div>
+        
+                <!-- Unit Sessions Results for Unit 1 and Unit 2 -->
+                <h5>Unit Sessions Results</h5>
+                <div class="table-responsive">
+                    {% for unit in unit_session_results %}
+                        {% if unit.unit == "Unit 1" or unit.unit == "Unit 2" %}
+                            <table class="table table-striped sortable" style="border: solid; border-color: teal;">
+                                <thead>
+                                    <tr class="table-header">
+                                        <td colspan="4">{{ unit.unit }} Session Quizzes</td>
+                                        <td>Result (%)</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in unit.sessions %}
+                                        <tr>
+                                            <td colspan="4">{{ session.quiz_name }}</td>
+                                            <td {% if session.avg_score < 75 %} style="color:red;" {% endif %}> {{ session.avg_score|floatformat:0 }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                               <tfoot>
+                                    <tr>
+                                        {% if unit.unit == "Unit 1" %}
+                                            <td><strong>Q1:</strong>%</td>
+                                            <td><strong>Q2:</strong>%</td>
+                                            <td><strong>Q3:</strong>%</td>
+                                            <td><strong>Q4:</strong>%</td>
+                                            <td><strong>Q5:</strong>%</td>
+                                        {% else %}
+                                            <td><strong>Q6:</strong>%</td>
+                                            <td><strong>Q7:</strong>%</td>
+                                            <td><strong>Q8:</strong>%</td>
+                                            <td><strong>Q9:</strong>%</td>
+                                            <td><strong>Q10:</strong>%</td>
+                                        {% endif %}
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        
+            <!-- Right Column: Unit Results for Other Units -->
+            <div class="col-6 table-responsive">     
+                <h5>.</h5>
+                {% for unit in unit_session_results %}
+                    {% if unit.unit != "Unit 1" and unit.unit != "Unit 2" %}
+                        <div class="table-responsive">
+                            <table class="table table-striped sortable" style="border: solid; border-color: teal;">
+                                <thead>
+                                    <tr class="table-header">
+                                        <td>{{ unit.unit }} Session Quiz</td>
+                                        <td>Result (%)</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in unit.sessions %}
+                                        <tr>
+                                            <td>{{ session.quiz_name }}</td>
+                                            <td {% if session.avg_score < 75 %} style="color:red;" {% endif %}> {{ session.avg_score|floatformat:0 }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <!-- <tfoot>
+                                    <tr>
+                                        <td><strong>{{ unit.unit }} - Average Score:</strong></td>
+                                        <td><strong>{{ unit.avg_score|floatformat:0 }}%</strong></td>
+                                    </tr>
+                                </tfoot> -->
+                            </table>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+          <!-- /.row -->
+
+          <!-- this row will not appear when printing -->
+          <div class="row no-print">
+            <div class="col-12">
+              <a href="" rel="noopener" target="_blank" class="btn btn-default"><i class="fas fa-print"></i> Print</a>
+              <button type="button" class="btn btn-primary float-right" style="margin-right: 5px;">
+                <i class="fas fa-download"></i> Generate PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /.col -->
+    </div><!-- /.row -->
+</div><!-- /.container-fluid -->
+
+{% endblock %}
+
+{% block extra_styles %}
+    <link href="{% static 'oppia/circliful/circliful.css' %}" rel="stylesheet"/>
+{% endblock extra_styles %}
+
+{% block extra_scripts %}
+	<script src="{% static 'oppia/circliful/circliful.min.js' %}"></script>
+	<script type="text/javascript">
+	    $(function(){
+            var scorecard = $('.course-scorecard')
+            var quizzes = scorecard.find('.quizzes .quiz');
+            var size = quizzes.first().width() + 'px';
+            var attemptedColor = $('.jumbotron ').css('background-color');
+            quizzes.each(function(){ $(this).tooltip().css({height:size, lineHeight:size}); });
+            scorecard.find('.piechart').circliful({ percent: scorecard.data('percent'), foregroundColor:attemptedColor, backgroundColor:"#eee", backgroundBorderWidth:14, foregroundBorderWidth:14 });
+            scorecard.css('visibility', 'visible');
+        });
+	</script>
+{% endblock extra_scripts %}
