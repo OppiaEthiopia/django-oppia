@@ -16,229 +16,470 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row bg-primary">
-      <div class="col-12" style="background-color: rgba(255, 255, 255, 0.911); ">
+    <div class="row col-12 mb-3" style="background-color: rgb(247, 245, 245);">
         <!-- Main content -->
-        <div class="invoice p-3 mb-3">
-          <!-- title row -->
-          <div class="row">
-            <div class="col-12" style="text-align: center; color: teal;">
-              <h4>
-                Blended IRT Learner Report ({% now "" %}): {{woreda}}
-              </h4>
-            </div>
-            <!-- /.col -->
-          </div>
-          <!-- info row -->
-          <div class="row invoice-info" style="border: solid teal; text-align: justify; ">
-            <div class="col-sm-3 invoice-col">
-              Name
-              <address>
-                <strong>{{ view_user.first_name }} {{ view_user.last_name }}</strong>
-              </address>
-            </div>
-            <!-- /.col -->
-            <div class="col-sm-3 invoice-col">
-              Phone Number
-                <address>
-                  <strong>{{user_profile.phone_number}}</strong>
-                </address>
-              </div>
-            <!-- /.col -->
-            <div class="col-sm-3 invoice-col">
-              PHCU
-                <address>
-                  <strong>{{phcu}}</strong>
-                </address>
-            </div>
-            <!-- /.col -->
-            <div class="col-sm-3 invoice-col">
-                Health Post
-                  <address>
-                    <strong>{{health_post}}</strong>
-                  </address>
-              </div>
-              <!-- /.col -->
-          </div>
-          <!-- /.row -->
-          <br>
-          <!-- Table row -->
-          <div class="row">
-            <!-- Left Column: Quizzes and Unit 1 & Unit 2 Results -->
-            <div class="col-6 table-responsive">
-                <!-- Quizzes and Feedback Section -->
-                {% if quizzes %}
-                <div class="table-responsive">
-                    <h5>{{ course.title|title_lang:LANGUAGE_CODE }}</h5>
-                    <table class="table table-striped sortable" style="border: solid; border-color: teal;">
+        <div id="print-section" class="invoice pt-2 mb-2">
+                <!-- title row -->
+                <div class="row">
+                    <div class="col-12">
+                        <h4 style="text-align: center; color: black;">
+                        Blended IRT Learner Report ({% now "" %}): {{woreda}}
+                        </h4>
+                        <div class="col-12 table-responsive">
+                            <h5 style="text-align: center; padding-top: 1px;"><b>{{ course.title|title_lang:LANGUAGE_CODE }}</b></h5>
+                            <div class="row invoice-info" style="border: solid;">
+                                <div class="col-sm-3 invoice-col mt-2">
+                                    <strong>Name</strong>
+                                    <address>
+                                        <strong>{{ view_user.first_name }} {{ view_user.last_name }}</strong>
+                                    </address>
+                                </div>
+                                <!-- /.col -->
+                                <div class="col-sm-3 invoice-col mt-2">
+                                    <strong>Phone Number</strong>
+                                    <address>
+                                    <strong>{{user_profile.phone_number}}</strong>
+                                    </address>
+                                </div>
+                                <!-- /.col -->
+                                <div class="col-sm-3 invoice-col mt-2">
+                                    <strong>PHCU</strong> 
+                                    <address>
+                                    <strong>{{phcu}}</strong>
+                                    </address>
+                                </div>
+                                <!-- /.col -->
+                                <div class="col-sm-3 invoice-col mt-2">
+                                    <strong>Health Post</strong>
+                                    <address>
+                                       <strong>{{health_post}}</strong>  
+                                    </address>
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                        </div>
+                    </div>
+                
+                <!-- Left Column: Quizzes and Unit 1 & Unit 2 Results -->
+                <div class="col-6 table-responsive">
+                    {% if quizzes %}
+                    <div class="table-responsive">
+                    <h5 style="padding-top: 10px;">Knowledge/Skill Assessments Results</h5>
+                    <table class="table table-striped sortable" style="border: solid; border-color: black;">
                         <thead>
-                            <tr>
-                                <td class="table-header">Knowlege/Skill Assessments</td>
-                                <td class="table-header">Result</td>
-                            </tr>
+                        <tr>
+                            <td class="table-header">Knowledge/Skill Assessments</td>
+                            <td class="table-header">Result</td>
+                        </tr>
                         </thead>
                         <tbody>
-                            <!-- Quizzes -->
-                            {% for q in quizzes %}
-                                {% if "Survey Post" in q.quiz.section.title|title_lang:LANGUAGE_CODE %}
-                                    <tr>
-                                        <td>{{ q.quiz.title|title_lang:LANGUAGE_CODE }}</td>
-                                        <td>
-                                            {% if q.max_score > 0 %}
-                                               {{ q.max_score|floatformat:0 }}%
-                                            {% else %}
-                                                NA
-                                            {% endif %}
-                                            
-                                        </td>
-                                    </tr>
+                        {% for q in quizzes %}
+                            {% if "Knowledge-Post" in q.quiz.title|title_lang:LANGUAGE_CODE or "Post-Test" in q.quiz.title|title_lang:LANGUAGE_CODE or "Post-test" in q.quiz.title|title_lang:LANGUAGE_CODE %}
+                            <tr>
+                                <td>{{ q.quiz.title|title_lang:LANGUAGE_CODE }}</td>
+                                <td {% if q.avg_score < 75 %}style="color:red;"{% endif %}>
+                                {% if q.max_score > 0 %}
+                                    {{ q.max_score|floatformat:0 }}%
+                                {% else %}
+                                    NA
                                 {% endif %}
-                            {% endfor %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
         
-                            <!-- Feedback Attempts -->
-                            {% for attempt in feedback_attempts %}
-                                {% if "Skills-Post" in attempt.quiz.title|title_lang:LANGUAGE_CODE %}
-                                    <tr>
-                                        <td>{{ attempt.quiz.title|title_lang:LANGUAGE_CODE }}</td>
-                                        <td style="text-align: center;">
-                                            {% if attempt.get_score_percent > 0 %}
-                                               {{ attempt.get_score_percent }}%
-                                            {% else %}
-                                                NA
-                                            {% endif %}
-                                            
-                                        </td>
-                                    </tr>
+                        {% for attempt in feedback_attempts %}
+                            {% if "Skills-Post" in attempt.quiz.title|title_lang:LANGUAGE_CODE or "PST-T" in attempt.quiz.title|title_lang:LANGUAGE_CODE %}
+                            <tr>
+                                <td>{{ attempt.quiz.title|title_lang:LANGUAGE_CODE }}</td>
+                                <td {% if q.avg_score < 75 %}style="color:red;"{% endif %}>
+                                {% if attempt.get_score_percent > 0 %}
+                                    {{ attempt.get_score_percent }}%
+                                {% else %}
+                                    NA
                                 {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="2" style="text-align: center;">
+                            <h5><strong>Activity completion = {{ activities_percent|floatformat:0 }}%</strong></h5>
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                    </div>
+                    {% endif %}
+        
+                    <h5>Unit Sessions Quizzes Average Results</h5>
+                    <div class="table-responsive">
+                    <table class="table table-striped sortable" style="border: solid; border-color: black;">
+                        <thead>
+                        <tr class="table-header">
+                            {% for unit in unit_session_results %}
+                            <td>{{ unit.unit }}</td>
                             {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            {% for unit in unit_session_results %}
+                            <td {% if unit.avg_score <= 75 %}style="color:red;"{% endif %}>
+                                {{ unit.avg_score|default:"--"|floatformat:0 }}%
+                            </td>
+                            {% endfor %}
+                        </tr>
                         </tbody>
                     </table>
-                </div>
-                {% endif %}
-
-                <!-- Unit Sessions Results for Unit 1 and Unit 2 -->
-                <h5>Unit Sessions Quizzes Average Results</h5>
-                <div class="table-responsive">
-                    
-                            <table class="table table-striped sortable" style="border: solid; border-color: teal;">
-                                <thead>
-                                    <tr class="table-header">
-                                        {% for unit in unit_session_results %}
-                                                <td>{{ unit.unit }}</td>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        {% for unit in unit_session_results %}
-                                        
-                                        <td 
-                                        {% if unit.avg_score <= 75 %}
-                                            style="color:red;"
-                                        {% endif %}
-                                        >
-                                            {{ unit.avg_score|default:"N/A"|floatformat:0 }}%
-                                        </td>
-                                    
-                                        {% endfor %}
-                                    </tr>  
-                                </tbody>
-                            </table>
-                    
-                </div>
+                    </div>
         
-                <!-- Unit Sessions Results for Unit 1 and Unit 2 -->
-                <h5>Unit Sessions Results</h5>
-                <div class="table-responsive">
-                    {% for unit in unit_session_results %}
-                        {% if unit.unit == "Unit 1" or unit.unit == "Unit 2" %}
-                            <table class="table table-striped sortable" style="border: solid; border-color: teal;">
+                    <h5>Unit Sessions Results</h5>
+                    {% for section in course.sections %}
+                    <div class="table-responsive">
+                        {% if "Unit" in section.title %}
+                            {% if  "RMNCH" in course.title|title_lang:LANGUAGE_CODE and forloop.counter <= 6 %}
+                                
+                            <table class="table table-striped sortable" style="border: solid; border-color: black;
+  table-layout: fixed;">
+                                    <thead>
+                                        <tr class="table-header">
+                                            <td 
+                                              {% if "Unit 1" in section.title|title_lang:LANGUAGE_CODE %} colspan="3"  {% endif %}
+                                              {% if "Unit 2" in section.title|title_lang:LANGUAGE_CODE %} colspan="2"  {% endif %}
+                                              {% if "Unit 3" in section.title|title_lang:LANGUAGE_CODE %} colspan="6"  {% endif %}
+                                            >{{ section.title|title_lang:LANGUAGE_CODE }}</td>
+                                            <td>Result (%)</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for q in quizzes %}
+                                            {% if q.quiz.section.title|title_lang:LANGUAGE_CODE == section.title|title_lang:LANGUAGE_CODE %}
+                                            <tr>
+                                                <td 
+                                                    {% if "Unit 1" in section.title|title_lang:LANGUAGE_CODE %} colspan="3"  {% endif %}
+                                                    {% if "Unit 2" in section.title|title_lang:LANGUAGE_CODE %} colspan="2"  {% endif %}
+                                                    {% if "Unit 3" in section.title|title_lang:LANGUAGE_CODE %} colspan="6"  {% endif %}
+                                                >{{ q.quiz.title|title_lang:LANGUAGE_CODE }}</td>
+                                                <td {% if q.avg_score < 75 %}style="color:red;"{% endif %}>
+                                                    {{ q.avg_score|default:"--"|floatformat:0 }}%
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            {% if "Unit 1" in section.title|title_lang:LANGUAGE_CODE %}
+                                            {% for response in responses %}
+                                                {% if forloop.counter < 5 %}
+                                                <td>
+                                                    Q{{ forloop.counter }}:
+                                                    {% if response.score %}
+                                                    <em class="fa fa-check text-success"></em>
+                                                    {% else %}
+                                                    <em class="fa fa-times text-danger"></em>
+                                                    {% endif %}
+                                                </td>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% elif "Unit 2" in section.title|title_lang:LANGUAGE_CODE %}
+                                            {% for response in responses %}
+                                               {% if forloop.counter > 4 and forloop.counter < 8 %}
+                                                <td>
+                                                    Q{{ forloop.counter }}:
+                                                    {% if response.score %}
+                                                    <em class="fa fa-check text-success"></em>
+                                                    {% else %}
+                                                    <em class="fa fa-times text-danger"></em>
+                                                    {% endif %}
+                                                </td>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% else %}
+                                            {% for response in responses %}
+                                                {% if forloop.counter > 7 and forloop.counter < 15 %}
+                                                <td>
+                                                    Q{{ forloop.counter }}:
+                                                    {% if response.score %}
+                                                    <em class="fa fa-check text-success"></em>
+                                                    {% else %}
+                                                    <em class="fa fa-times text-danger"></em>
+                                                    {% endif %}
+                                                </td>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% endif %}
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            {% elif "RMNCH" not in course.title|title_lang:LANGUAGE_CODE and forloop.counter <= 5 %}
+                            <table class="table table-striped sortable" style="border: solid; border-color: black;">
                                 <thead>
                                     <tr class="table-header">
-                                        <td colspan="4">{{ unit.unit }} Session Quizzes</td>
+                                        <td colspan="4">{{ section.title|title_lang:LANGUAGE_CODE }}</td>
                                         <td>Result (%)</td>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for session in unit.sessions %}
+                                    {% for q in quizzes %}
+                                        {% if q.quiz.section.title|title_lang:LANGUAGE_CODE == section.title|title_lang:LANGUAGE_CODE %}
                                         <tr>
-                                            <td colspan="4">{{ session.quiz_name }}</td>
-                                            <td {% if session.avg_score < 75 %} style="color:red;" {% endif %}> {{ session.avg_score|floatformat:0 }}%</td>
+                                            <td colspan="4">{{ q.quiz.title|title_lang:LANGUAGE_CODE }}</td>
+                                            <td {% if q.avg_score < 75 %}style="color:red;"{% endif %}>
+                                                {{ q.avg_score|default:"--"|floatformat:0 }}%
+                                            </td>
                                         </tr>
+                                        {% endif %}
                                     {% endfor %}
                                 </tbody>
-                               <tfoot>
+                                <tfoot>
                                     <tr>
-                                        {% if unit.unit == "Unit 1" %}
-                                            <td><strong>Q1:</strong>%</td>
-                                            <td><strong>Q2:</strong>%</td>
-                                            <td><strong>Q3:</strong>%</td>
-                                            <td><strong>Q4:</strong>%</td>
-                                            <td><strong>Q5:</strong>%</td>
+                                        {% if "Unit 1" in section.title|title_lang:LANGUAGE_CODE %}
+                                        {% for response in responses %}
+                                            {% if forloop.counter < 6 %}
+                                            <td>
+                                                Q{{ forloop.counter }}:
+                                                {% if response.score %}
+                                                <em class="fa fa-check text-success"></em>
+                                                {% else %}
+                                                <em class="fa fa-times text-danger"></em>
+                                                {% endif %}
+                                            </td>
+                                            {% endif %}
+                                        {% endfor %}
                                         {% else %}
-                                            <td><strong>Q6:</strong>%</td>
-                                            <td><strong>Q7:</strong>%</td>
-                                            <td><strong>Q8:</strong>%</td>
-                                            <td><strong>Q9:</strong>%</td>
-                                            <td><strong>Q10:</strong>%</td>
+                                        {% for response in responses %}
+                                            {% if forloop.counter > 5 and forloop.counter < 11 %}
+                                            <td>
+                                                Q{{ forloop.counter }}:
+                                                {% if response.score %}
+                                                <em class="fa fa-check text-success"></em>
+                                                {% else %}
+                                                <em class="fa fa-times text-danger"></em>
+                                                {% endif %}
+                                            </td>
+                                            {% endif %}
+                                        {% endfor %}
                                         {% endif %}
                                     </tr>
                                 </tfoot>
                             </table>
+                            {% endif %}
                         {% endif %}
+                    </div>
                     {% endfor %}
                 </div>
-            </div>
         
-            <!-- Right Column: Unit Results for Other Units -->
-            <div class="col-6 table-responsive">     
-                <h5>.</h5>
-                {% for unit in unit_session_results %}
-                    {% if unit.unit != "Unit 1" and unit.unit != "Unit 2" %}
+                <!-- Right Column: Unit Results for Other Units -->
+                <div class="col-6 table-responsive">
+                    <h5 style="padding-top: 10px;">.</h5> 
+                    {% for section in course.sections %}
+                         
                         <div class="table-responsive">
-                            <table class="table table-striped sortable" style="border: solid; border-color: teal;">
-                                <thead>
-                                    <tr class="table-header">
-                                        <td>{{ unit.unit }} Session Quiz</td>
-                                        <td>Result (%)</td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for session in unit.sessions %}
-                                        <tr>
-                                            <td>{{ session.quiz_name }}</td>
-                                            <td {% if session.avg_score < 75 %} style="color:red;" {% endif %}> {{ session.avg_score|floatformat:0 }}%</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                                <!-- <tfoot>
-                                    <tr>
-                                        <td><strong>{{ unit.unit }} - Average Score:</strong></td>
-                                        <td><strong>{{ unit.avg_score|floatformat:0 }}%</strong></td>
-                                    </tr>
-                                </tfoot> -->
-                            </table>
+                            {% if "Unit" in section.title %}
+                                {% if "RMNCH" in course.title|title_lang:LANGUAGE_CODE and forloop.counter > 6 %}
+                                    <table class="table table-striped sortable" style="border: solid; border-color: black;">
+                                        <thead>
+                                            <tr class="table-header">
+                                                <td {% if "Unit 4" in section.title|title_lang:LANGUAGE_CODE %} colspan="4"  {% endif %}
+                                                        {% if "Unit 5" in section.title|title_lang:LANGUAGE_CODE %} colspan="4"  {% endif %}
+                                                        {% if "Unit 6" in section.title|title_lang:LANGUAGE_CODE %} colspan="5"  {% endif %}>
+                                                    {{ section.title|title_lang:LANGUAGE_CODE }}</td>
+                                                <td>Result (%)</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for q in quizzes %}
+                                                {% if q.quiz.section.title|title_lang:LANGUAGE_CODE == section.title|title_lang:LANGUAGE_CODE %}
+                                                <tr>
+                                                    <td {% if "Unit 4" in section.title|title_lang:LANGUAGE_CODE %} colspan="4"  {% endif %}
+                                                        {% if "Unit 5" in section.title|title_lang:LANGUAGE_CODE %} colspan="4"  {% endif %}
+                                                        {% if "Unit 6" in section.title|title_lang:LANGUAGE_CODE %} colspan="5"  {% endif %}>
+                                                        {{ q.quiz.title|title_lang:LANGUAGE_CODE }}</td>
+                                                    <td {% if q.avg_score < 75 %}style="color:red;"{% endif %}>
+                                                        {{ q.avg_score|default:"--"|floatformat:0 }}%
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                {% if "Unit 4" in section.title|title_lang:LANGUAGE_CODE %}
+                                                {% for response in responses %}
+                                                    {% if forloop.counter > 14 and forloop.counter < 20 %}
+                                                    <td>
+                                                        Q{{ forloop.counter }}:
+                                                        {% if response.score %}
+                                                        <em class="fa fa-check text-success"></em>
+                                                        {% else %}
+                                                        <em class="fa fa-times text-danger"></em>
+                                                        {% endif %}
+                                                    </td>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% elif "Unit 5" in section.title|title_lang:LANGUAGE_CODE %}
+                                                  <td colspan="6">
+                                                        <tr>
+                                                            {% for response in responses %}
+                                                            {% if forloop.counter > 19 and forloop.counter < 25 %}
+                                                                <td>
+                                                                    Q{{ forloop.counter }}:
+                                                                    {% if response.score %}
+                                                                    <em class="fa fa-check text-success"></em>
+                                                                    {% else %}
+                                                                    <em class="fa fa-times text-danger"></em>
+                                                                    {% endif %}
+                                                                </td>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </tr>
+                                                        <tr>
+                                                            {% for response in responses %}
+                                                            {% if forloop.counter > 35%}
+                                                                <td>
+                                                                    Q{{ forloop.counter }}:
+                                                                    {% if response.score %}
+                                                                    <em class="fa fa-check text-success"></em>
+                                                                    {% else %}
+                                                                    <em class="fa fa-times text-danger"></em>
+                                                                    {% endif %}
+                                                                </td>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </tr>
+                                                  </td>
+                                                
+                                                {% else %}
+                                                <td colspan="5">
+                                                    <tr>
+                                                        {% for response in responses %}
+                                                        {% if forloop.counter > 24 and forloop.counter < 31 %}
+                                                            <td>
+                                                                Q{{ forloop.counter }}:
+                                                                {% if response.score %}
+                                                                <em class="fa fa-check text-success"></em>
+                                                                {% else %}
+                                                                <em class="fa fa-times text-danger"></em>
+                                                                {% endif %}
+                                                            </td>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </tr>
+                                                    <tr>
+                                                        {% for response in responses %}
+                                                        {% if forloop.counter > 30 and forloop.counter < 36  %}
+                                                            <td {% if forloop.counter == 35 %} colspan="2"  {% endif %}>
+                                                                Q{{ forloop.counter }}:
+                                                                {% if response.score %}
+                                                                <em class="fa fa-check text-success"></em>
+                                                                {% else %}
+                                                                <em class="fa fa-times text-danger"></em>
+                                                                {% endif %}
+                                                            </td>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </tr>
+                                                </td>
+                                                {% endif %}
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                {% elif "RMNCH" not in course.title|title_lang:LANGUAGE_CODE and forloop.counter > 5 %}
+                                    <table class="table table-striped sortable" style="border: solid; border-color: black;">
+                                        <thead>
+                                            <tr class="table-header">
+                                                <td colspan="4">{{ section.title|title_lang:LANGUAGE_CODE }}</td>
+                                                <td>Result (%)</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for q in quizzes %}
+                                                {% if q.quiz.section.title|title_lang:LANGUAGE_CODE == section.title|title_lang:LANGUAGE_CODE %}
+                                                <tr>
+                                                    <td colspan="4">{{ q.quiz.title|title_lang:LANGUAGE_CODE }}</td>
+                                                    <td {% if q.avg_score < 75 %}style="color:red;"{% endif %}>
+                                                        {{ q.avg_score|default:"--"|floatformat:0 }}%
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                {% if "Unit 3" in section.title|title_lang:LANGUAGE_CODE %}
+                                                {% for response in responses %}
+                                                    {% if forloop.counter > 10 and forloop.counter < 16 %}
+                                                    <td>
+                                                        Q{{ forloop.counter }}:
+                                                        {% if response.score %}
+                                                        <em class="fa fa-check text-success"></em>
+                                                        {% else %}
+                                                        <em class="fa fa-times text-danger"></em>
+                                                        {% endif %}
+                                                    </td>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% elif "Unit 4" in section.title|title_lang:LANGUAGE_CODE %}
+                                                {% for response in responses %}
+                                                    {% if forloop.counter > 15 and forloop.counter < 21 %}
+                                                    <td>
+                                                        Q{{ forloop.counter }}:
+                                                        {% if response.score %}
+                                                        <em class="fa fa-check text-success"></em>
+                                                        {% else %}
+                                                        <em class="fa fa-times text-danger"></em>
+                                                        {% endif %}
+                                                    </td>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% else %}
+                                                {% for response in responses %}
+                                                    {% if forloop.counter > 20 %}
+                                                    <td colspan="4">
+                                                        Q{{ forloop.counter }}:
+                                                        {% if response.score %}
+                                                        <em class="fa fa-check text-success"></em>
+                                                        {% else %}
+                                                        <em class="fa fa-times text-danger"></em>
+                                                        {% endif %}
+                                                    </td>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% endif %}
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                {% endif %}
+                            {% endif %}
                         </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        
-          <!-- /.row -->
+                    {% endfor %}
+                </div>
+                
+                
+            
+                <div class="col-12">
+                <strong><i>Quiz and assessment scores < 75% are displayed in red to indicate that the learner did not pass.<br>
+                Post-Training Assessment Questions (Q1-22): <span class="fa fa-check text-success"> </span>= Correct, <span class="fa fa-times text-danger"> </span> = Incorrect, <span class="fa fa-adjust text-warning"> </span> = Partially Correct.  NA = not applicable (no score)</i></strong>
+                </div>
 
-          <!-- this row will not appear when printing -->
-          <div class="row no-print">
-            <div class="col-12">
-              <a href="" rel="noopener" target="_blank" class="btn btn-default"><i class="fas fa-print"></i> Print</a>
-              <button type="button" class="btn btn-primary float-right" style="margin-right: 5px;">
-                <i class="fas fa-download"></i> Generate PDF
-              </button>
-            </div>
-          </div>
+                </div>
+        </div><!-- /.invoice -->
+        <!-- Footer row with Print and PDF generation buttons -->
+        <div class="row col-12 mb-3 ">
+            <!--<a href="?export=pdf" rel="noopener" target="_blank" class="btn btn-default"><i class="fas fa-print"></i> Print</a> -->
+            <button type="button" class="btn btn-primary" onclick="printDiv('print-section')">
+                <i class="fas fa-download"></i> Print
+            </button>
         </div>
-      </div><!-- /.col -->
+  
+      
     </div><!-- /.row -->
-</div><!-- /.container-fluid -->
+  </div><!-- /.container-fluid -->
+  
 
 {% endblock %}
 
@@ -259,4 +500,31 @@
             scorecard.css('visibility', 'visible');
         });
 	</script>
+    <script>
+        function printDiv(divId) {
+            var printContents = document.getElementById(divId).innerHTML;
+            var originalContents = document.body.innerHTML;
+    
+            document.body.innerHTML = printContents; // Replace content with the selected div
+            window.print(); // Trigger print dialog
+            document.body.innerHTML = originalContents; // Restore the original content
+            window.location.reload(); // Reload the page to reset state
+        }
+    </script>
+    
+    <!-- <script>
+        document.getElementById('print-button').addEventListener('click', function () {
+            const element = document.getElementById('print-section'); // Select the section to print
+            const options = {
+                margin: 1,
+                filename: 'document.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+    
+            // Generate the PDF
+            html2pdf().set(options).from(element).save();
+        });
+    </script> -->
 {% endblock extra_scripts %}

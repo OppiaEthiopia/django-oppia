@@ -210,9 +210,7 @@ class UserCourseGradeResults(CanViewUserDetailsMixin, DateRangeFilterMixin, Deta
             user=self.object,  # Filter attempts for the specific user
             quiz__quizprops__name=QuizProps.DIGEST,
             quiz__quizprops__value__in=Activity.objects.filter(
-                Q(title__icontains="Knowledge-Post") | 
-                Q(title__icontains="Post-Test") | 
-                Q(title__icontains="Post-test"),  # Match "Survey Post" or "Post-Test"  # Match "Survey Post" in Activity
+                section__title__icontains="Survey Post"  # Match "Survey Post" in Activity
             ).values_list('digest', flat=True)
         ).order_by('-submitted_date').first()  # Optional: Order by latest attempt
 
@@ -221,12 +219,10 @@ class UserCourseGradeResults(CanViewUserDetailsMixin, DateRangeFilterMixin, Deta
 
         # Filter activities for "Survey Post" in the section title
         survey_post_activity = Activity.objects.filter(
-            Q(title__icontains="Knowledge-Post") | 
-            Q(title__icontains="Post-Test") | 
-            Q(title__icontains="Post-test"),  # Match "Survey Post" or "Post-Test"
-            section__course=course,  # Filter by course
+            section__title__icontains="Survey Post",  # Match "Survey Post" in section title
+            section__course=course,  # Filter activities belonging to the course
             type=Activity.QUIZ  # Only quiz activities
-            ).first()
+        ).first()
 
         survey_post_quiz = None
         quiz_result = None
@@ -383,10 +379,9 @@ def process_quiz_activity(view_user, aq, course_pretest, quizzes_attempted, quiz
     return quiz_info, course_pretest, quizzes_attempted, quizzes_passed
 
 
-
 def extract_and_display_unit_session_results(quizzes):
     unit_session_data = defaultdict(lambda: {
-        'quizzes': [],  # Store all quizzes (not just session quizzes)
+        'sessions': [],
         'total_score': 0,
         'count': 0
     })
@@ -395,7 +390,8 @@ def extract_and_display_unit_session_results(quizzes):
         quiz_name = str(quiz['quiz'])
         
         unit = "General"
-        unit_number = float('inf')  # Default for sorting
+        unit_number = float('inf')  # Default to ensure sorting works
+        session_number = float('inf')
         unit_title = ""
 
         # Extract unit number (supports "Unit X", "U X", and variations)
@@ -404,8 +400,18 @@ def extract_and_display_unit_session_results(quizzes):
             unit_number = int(unit_match.group(1))
             unit = f"Unit {unit_number}"
 
-        # Add quiz to the unit's data (no filtering for sessions)
-        unit_session_data[unit]['quizzes'].append({
+        # Extract session number
+        session_match = re.search(r'\bSession\s*(\d+)\b', quiz_name, re.IGNORECASE)
+        if session_match:
+            session_number = int(session_match.group(1))
+            session = f"Session {session_number}"
+        else:
+            continue  # Skip if no valid session number
+
+        # Update the unit's data
+        unit_session_data[unit]['sessions'].append({
+            'session': session,
+            'session_number': session_number,
             'quiz_name': quiz_name,
             'avg_score': quiz['avg_score'],
             'passed': quiz['passed'],
@@ -413,30 +419,25 @@ def extract_and_display_unit_session_results(quizzes):
         unit_session_data[unit]['total_score'] += quiz['avg_score']
         unit_session_data[unit]['count'] += 1
 
-    # Build final unit display data (including all quizzes)
+    # Build and sort final display data
     display_data = []
     for unit, data in unit_session_data.items():
-        if unit == "General":  
-            continue  # 🚀 Skip "General" unit
-        avg_score = data['total_score'] / data['count'] if data['count'] > 0 else 0
-        sorted_quizzes = sorted(data['quizzes'], key=lambda x: x['quiz_name'])
-
-        # Extract unit number safely for sorting
-        unit_number_match = re.search(r'\d+', unit)
-        unit_number = int(unit_number_match.group()) if unit_number_match else float('inf')
+        avg_score = data['total_score'] / data['count']
+        sorted_sessions = sorted(data['sessions'], key=lambda x: x['session_number'])
 
         display_data.append({
             'unit': unit,
             'unit_number': unit_number,  # Store for sorting
-            'avg_score': avg_score,  # Average across **all** quizzes in the unit
-            'quizzes': sorted_quizzes,
+            'avg_score': avg_score,
+            'sessions': sorted_sessions,
             'unit_title': unit_title
         })
 
-    # Sort units by extracted number (General at the end)
+    # Sort units: "General" should come last
     display_data.sort(key=lambda x: x['unit_number'])
 
     return display_data
+
 
 
 class UserActivityDetailListDetails(CanViewUserDetailsMixin, DateRangeFilterMixin, SafePaginatorMixin, ListView):
