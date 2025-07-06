@@ -74,7 +74,7 @@
                         </thead>
                         <tbody>
                         {% for q in quizzes %}
-                            {% if "Knowledge-Post" in q.quiz.title|title_lang:LANGUAGE_CODE or "Post-Test" in q.quiz.title|title_lang:LANGUAGE_CODE or "Post-test" in q.quiz.title|title_lang:LANGUAGE_CODE %}
+                            {% if q.quiz.title and "Knowledge-Post" in q.quiz.title|title_lang:LANGUAGE_CODE or "Post-Test" in q.quiz.title|title_lang:LANGUAGE_CODE or "Post-test" in q.quiz.title|title_lang:LANGUAGE_CODE or "POST-Test" in q.quiz.title|title_lang:LANGUAGE_CODE %}
                             <tr>
                                 <td>{{ q.quiz.title|title_lang:LANGUAGE_CODE }}</td>
                                 <td {% if q.avg_score < 75 %}style="color:red;"{% endif %}>

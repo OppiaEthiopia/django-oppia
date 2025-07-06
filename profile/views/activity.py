@@ -212,6 +212,7 @@ class UserCourseGradeResults(CanViewUserDetailsMixin, DateRangeFilterMixin, Deta
             quiz__quizprops__value__in=Activity.objects.filter(
                 Q(title__icontains="Knowledge-Post") | 
                 Q(title__icontains="Post-Test") | 
+                Q(title__icontains="POST-Test") |
                 Q(title__icontains="Post-test"),  # Match "Survey Post" or "Post-Test"  # Match "Survey Post" in Activity
             ).values_list('digest', flat=True)
         ).order_by('-submitted_date').first()  # Optional: Order by latest attempt
@@ -222,7 +223,8 @@ class UserCourseGradeResults(CanViewUserDetailsMixin, DateRangeFilterMixin, Deta
         # Filter activities for "Survey Post" in the section title
         survey_post_activity = Activity.objects.filter(
             Q(title__icontains="Knowledge-Post") | 
-            Q(title__icontains="Post-Test") | 
+            Q(title__icontains="Post-Test") |
+            Q(title__icontains="POST-Test") | 
             Q(title__icontains="Post-test"),  # Match "Survey Post" or "Post-Test"
             section__course=course,  # Filter by course
             type=Activity.QUIZ  # Only quiz activities
@@ -410,7 +412,8 @@ def extract_and_display_unit_session_results(quizzes):
             'avg_score': quiz['avg_score'],
             'passed': quiz['passed'],
         })
-        unit_session_data[unit]['total_score'] += quiz['avg_score']
+        score = quiz['avg_score'] or 0
+        unit_session_data[unit]['total_score'] += score
         unit_session_data[unit]['count'] += 1
 
     # Build final unit display data (including all quizzes)
