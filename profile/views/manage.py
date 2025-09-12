@@ -279,10 +279,48 @@ class UploadUsers(AdminRequiredMixin, FormView):
 
     def update_custom_fields(self, user, row, override_fields):
         custom_fields = CustomField.objects.all()
+
+        # Extract training_date, training_location, and module_type from row
+        training_date = row.get('training_date')
+        training_location = row.get('training_location') or row.get('training_center')
+        module_type = row.get('module_type')
+
+        training_info = None
+        if training_date and (module_type or training_location):
+            print(f"Training Date: {training_date}, Training Location: {training_location}, Module Type: {module_type}")
+            import datetime
+            if isinstance(training_date, datetime.datetime):
+                training_date = training_date.date()
+            elif isinstance(training_date, str):
+                parsed = False
+                # Try ISO format first
+                try:
+                    training_date = datetime.datetime.fromisoformat(training_date).date()
+                    parsed = True
+                except Exception:
+                    pass
+                # Try common US and EU date formats if not parsed
+                if not parsed:
+                    for fmt in ("%m/%d/%Y", "%d/%m/%Y", "%m-%d-%Y", "%d-%m-%Y"):
+                        try:
+                            training_date = datetime.datetime.strptime(training_date, fmt).date()
+                            parsed = True
+                            break
+                        except Exception:
+                            continue
+                if not parsed:
+                    print(f"Could not parse training_date: {training_date}")
+            from profile.models import TrainingInfo
+            training_info, _ = TrainingInfo.objects.get_or_create(
+                training_date=training_date,
+                module_type=module_type,
+                defaults={"training_location": training_location}
+            )
+
         for cf in custom_fields:
             if cf.id in row:
                 upcf, created = UserProfileCustomField.objects.get_or_create(
-                    user=user, key_name=cf)
+                    user=user, key_name=cf, training_info=training_info)
                 if cf.type == 'bool':
                     if override_fields or upcf.value_bool is None:
                         upcf.value_bool = row[cf.id]

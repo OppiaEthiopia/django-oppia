@@ -1,11 +1,11 @@
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from datarecovery.models import DataRecovery
 from oppia.models import Participant, CoursePermissions
-
+import logging
+logger = logging.getLogger(__name__)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -48,16 +48,58 @@ class UserProfile(models.Model):
         return teacher.exists() and not manager.exists()
 
     def update_customfields(self, fields_dict):
+        print('hi')
         errors = []
         custom_fields = CustomField.objects.all()
+
+        # Extract training_date, training_location, and module_type from fields_dict
+        training_date = fields_dict.get('training_date')
+        training_location = fields_dict.get('training_location') or fields_dict.get('training_center')
+        module_type = fields_dict.get('module_type')
+
+        training_info = None
+        print(f"training_date: {training_date}, training_location: {training_location}, module_type: {module_type}")
+        
+        if training_date and (module_type or training_location):
+            # Convert to date if it's a datetime or string
+            import datetime
+            if isinstance(training_date, datetime.datetime):
+                training_date = training_date.date()
+            elif isinstance(training_date, str):
+                parsed = False
+                # Try ISO format first
+                try:
+                    training_date = datetime.datetime.fromisoformat(training_date).date()
+                    parsed = True
+                except Exception:
+                    pass
+                # Try common US and EU date formats if not parsed
+                if not parsed:
+                    for fmt in ("%m/%d/%Y", "%d/%m/%Y", "%m-%d-%Y", "%d-%m-%Y"):
+                        try:
+                            training_date = datetime.datetime.strptime(training_date, fmt).date()
+                            parsed = True
+                            break
+                        except Exception:
+                            continue
+                if not parsed:
+                    print(f"Could not parse training_date: {training_date}")
+            training_info, _ = TrainingInfo.objects.get_or_create(
+                training_date=training_date,
+                module_type=module_type,
+                defaults={"training_location": training_location}
+            )
+
         for custom_field in custom_fields:
             if custom_field.id in fields_dict and (
                 (fields_dict[custom_field.id] != '' and fields_dict[custom_field.id] is not None)
                     or custom_field.required is True
             ):
-
-                profile_field, created = UserProfileCustomField.objects \
-                    .get_or_create(key_name=custom_field, user=self.user)
+                profile_field, created = UserProfileCustomField.objects.get_or_create(
+                    key_name=custom_field,
+                    user=self.user,
+                    training_info=training_info
+                )
 
                 if custom_field.type == 'int':
                     profile_field.value_int = fields_dict.get(custom_field.id, None)
@@ -68,8 +110,7 @@ class UserProfile(models.Model):
 
                 profile_field.save()
 
-        missing_fields = [field for field in fields_dict if field not in custom_fields.values_list('id',
-                                                                                                   flat=True).all()]
+        missing_fields = [field for field in fields_dict if field not in custom_fields.values_list('id', flat=True).all()]
         if missing_fields:
             errors.append(DataRecovery.Reason.CUSTOM_PROFILE_FIELDS_NOT_DEFINED_IN_THE_SERVER + str(missing_fields))
 
@@ -107,17 +148,32 @@ class CustomField(models.Model):
         return self.id
 
 
-class UserProfileCustomField (models.Model):
+class TrainingInfo(models.Model):
+    id = models.AutoField(primary_key=True)
+    training_date = models.DateField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    training_location = models.CharField(max_length=255)
+    module_type = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        unique_together = ['training_date', 'module_type']
+
+    def __str__(self):
+        return f"{self.module_type or self.training_location} on {self.training_date}"
+
+
+class UserProfileCustomField(models.Model):
     key_name = models.ForeignKey(CustomField, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     value_str = models.TextField(blank=True, null=True, default=None)
     value_int = models.IntegerField(blank=True, null=True, default=None)
     value_bool = models.BooleanField(null=True, default=None)
+    training_info = models.ForeignKey(TrainingInfo, on_delete=models.CASCADE, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ['key_name', 'user']
+        unique_together = ['key_name', 'user', 'training_info']
 
     def __str__(self):
         return self.key_name.id + ": " + self.user.username

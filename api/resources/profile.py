@@ -83,6 +83,7 @@ class ProfileUpdateResource(ModelResource):
         user_profile = self.process_profile_update_base_profile(bundle)
         # Create any CustomField entries
         user_fields = [f.name for f in User._meta.get_fields()]
+        print("test")
         custom_fields = {field: bundle.data[field] for field in bundle.data if field not in user_fields}
         update_custom_fields_errors = user_profile.update_customfields(custom_fields)
 
