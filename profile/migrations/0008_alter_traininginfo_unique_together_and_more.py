@@ -14,13 +14,4 @@ class Migration(migrations.Migration):
             name='traininginfo',
             unique_together=set(),
         ),
-        migrations.AddField(
-            model_name='traininginfo',
-            name='programme_name',
-            field=models.CharField(blank=True, max_length=255, null=True),
-        ),
-        migrations.AlterUniqueTogether(
-            name='traininginfo',
-            unique_together={('training_date', 'programme_name')},
-        ),
     ]

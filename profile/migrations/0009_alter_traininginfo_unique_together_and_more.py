@@ -19,8 +19,4 @@ class Migration(migrations.Migration):
             name='module_type',
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
-        migrations.RemoveField(
-            model_name='traininginfo',
-            name='programme_name',
-        ),
     ]
