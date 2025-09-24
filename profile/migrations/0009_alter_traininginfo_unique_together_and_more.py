@@ -10,13 +10,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name='traininginfo',
-            unique_together={('training_date', 'module_type')},
-        ),
         migrations.AddField(
             model_name='traininginfo',
             name='module_type',
             field=models.CharField(blank=True, max_length=255, null=True),
+        ),
+        migrations.AlterUniqueTogether(
+            name='traininginfo',
+            unique_together={('training_date', 'module_type')},
         ),
     ]

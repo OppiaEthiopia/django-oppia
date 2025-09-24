@@ -147,12 +147,14 @@ class UserProfileResource(ModelResource):
         authentication = ApiKeyAuthentication()
         always_return_data = True
         include_resource_uri = False
-        fields = ['first_name',
-                  'last_name',
-                  'username',
-                  'email',
-                  'job_title',
-                  'organisation']
+        fields = [
+            'first_name', 'last_name', 'username', 'email',
+            'job_title', 'organisation', 'grand_father', 'participant_id', 
+            'gender',  'education_level', 'region', 'region_uid', 'zone', 'zone_uid',
+            'woreda', 'woreda_uid', 'phcu', 'phcu_uid', 'health_post', 'healthpost_uid',
+            'year_of_birth', 'year_of_employment', 'about', 'phone_number',
+            # Add any additional new fields from UserProfile here if needed
+        ]
 
     def dispatch(self, request_type, request, **kwargs):
         # Force this to be a single User object
@@ -163,19 +165,39 @@ class UserProfileResource(ModelResource):
 
     def dehydrate(self, bundle):
         bundle = super().dehydrate(bundle)
-
         try:
             profile = UserProfile.objects.get(user=bundle.obj)
+            # Add all new fields to the API response
             bundle.data['job_title'] = profile.job_title
             bundle.data['organisation'] = profile.organisation
+            bundle.data['grand_father'] = profile.grand_father
+            bundle.data['participant_id'] = profile.participant_id
+            bundle.data['gender'] = profile.gender
+            bundle.data['education_level'] = profile.education_level
+            bundle.data['region'] = profile.region
+            bundle.data['region_uid'] = profile.region_uid
+            bundle.data['zone'] = profile.zone
+            bundle.data['zone_uid'] = profile.zone_uid
+            bundle.data['woreda'] = profile.woreda
+            bundle.data['woreda_uid'] = profile.woreda_uid
+            bundle.data['phcu'] = profile.phcu
+            bundle.data['phcu_uid'] = profile.phcu_uid
+            bundle.data['health_post'] = profile.health_post
+            bundle.data['healthpost_uid'] = profile.healthpost_uid
+            bundle.data['year_of_birth'] = profile.year_of_birth
+            bundle.data['year_of_employment'] = profile.year_of_employment
+            bundle.data['about'] = profile.about
+            bundle.data['phone_number'] = profile.phone_number
 
             customfields = profile.get_customfields_dict()
             bundle.data.update(customfields)
-
         except UserProfile.DoesNotExist:
-            bundle.data['job_title'] = ''
-            bundle.data['organisation'] = ''
-
+            # Set all new fields to '' if profile does not exist
+            for field in [
+                'job_title', 'organisation', 'grand_father', 'participant_id',  'gender',
+                'education_level', 'region', 'region_uid', 'zone', 'zone_uid', 'woreda', 'woreda_uid', 'phcu',
+                'phcu_uid', 'health_post', 'healthpost_uid', 'year_of_birth', 'year_of_employment', 'about', 'phone_number']:
+                bundle.data[field] = ''
         return bundle
 
     def dehydrate_cohorts(self, bundle):

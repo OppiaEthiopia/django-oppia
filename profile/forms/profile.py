@@ -50,14 +50,49 @@ class ProfileForm(forms.Form):
                                 required=True)
     job_title = forms.CharField(max_length=100, required=False)
     organisation = forms.CharField(max_length=100, required=False)
+    grand_father = forms.CharField(max_length=100, required=False)
+    participant_id = forms.CharField(max_length=100, required=False)
+    gender = forms.CharField(max_length=50, required=False)
+    education_level = forms.CharField(max_length=100, required=False)
+    region = forms.CharField(max_length=100, required=False)
+    region_uid = forms.CharField(max_length=100, required=False)
+    zone = forms.CharField(max_length=100, required=False)
+    zone_uid = forms.CharField(max_length=100, required=False)
+    woreda = forms.CharField(max_length=100, required=False)
+    woreda_uid = forms.CharField(max_length=100, required=False)
+    phcu = forms.CharField(max_length=100, required=False)
+    phcu_uid = forms.CharField(max_length=100, required=False)
+    health_post = forms.CharField(max_length=100, required=False)
+    healthpost_uid = forms.CharField(max_length=100, required=False)
+    year_of_birth = forms.IntegerField(required=False)
+    year_of_employment = forms.IntegerField(required=False)
+    about = forms.CharField(widget=forms.Textarea, required=False)
     phone_number = forms.CharField(max_length=100, required=False)
+    Profession = forms.CharField(max_length=100, required=False)
+    health_post_type = forms.CharField(max_length=100, required=False)
+    hew_type = forms.CharField(max_length=100, required=False)
+    hew_setting = forms.CharField(max_length=100, required=False)
     exclude_from_reporting = forms.BooleanField(
         required=False,
         help_text=_('If checked, the activity from this user will not be taken into account for summary '
                     'calculations and reports'))
 
     def __init__(self, allow_edit=True, *args, **kwargs):
-        super(ProfileForm, self).__init__(* args, ** kwargs)
+        # Prepopulate initial data from UserProfile instance if provided
+        instance = kwargs.pop('instance', None)
+        if instance:
+            initial = kwargs.get('initial', {})
+            # Populate all new UserProfile fields
+            for field in [
+                'job_title', 'organisation', 'grand_father', 'participant_id', 
+                'gender', 'education_level', 'region', 'region_uid', 'zone', 'zone_uid',
+                'woreda', 'woreda_uid', 'phcu', 'phcu_uid', 'health_post', 'healthpost_uid',
+                'year_of_birth', 'year_of_employment', 'about', 'phone_number',
+                'Profession', 'health_post_type', 'hew_type', 'hew_setting']:
+                initial[field] = getattr(instance, field, '')
+            kwargs['initial'] = initial
+
+        super(ProfileForm, self).__init__(*args, **kwargs)
 
         userdata = kwargs.get('initial') \
             if 'initial' in kwargs else kwargs.get('data')
@@ -110,10 +145,32 @@ class ProfileForm(forms.Form):
                 if not key.startswith('password'):
                     field.widget.attrs.update({'readonly': 'readonly'})
 
-        self.helper.layout.extend(
-            ['job_title',
-             'organisation',
-             'phone_number'])
+        self.helper.layout.extend([
+            'job_title',
+            'organisation',
+            'grand_father',
+            'participant_id',
+            'gender',
+            'education_level',
+            'region',
+            'region_uid',
+            'zone',
+            'zone_uid',
+            'woreda',
+            'woreda_uid',
+            'phcu',
+            'phcu_uid',
+            'health_post',
+            'healthpost_uid',
+            'year_of_birth',
+            'year_of_employment',
+            'about',
+            'phone_number',
+            'Profession',
+            'health_post_type',
+            'hew_type',
+            'hew_setting',
+        ])
 
         custom_fields = CustomField.objects.all().order_by('order')
         for custom_field in custom_fields:
