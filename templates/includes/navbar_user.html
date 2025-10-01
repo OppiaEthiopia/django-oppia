@@ -37,7 +37,8 @@
                 <a class="dropdown-item" href="{% url 'profile:badges' %}">{% trans 'Badges' %}</a>
                 {% endif %}
                 <a class="dropdown-item" href="{% url 'profile:edit' %}">{% trans 'Edit Profile' %}</a>
-                <a class="dropdown-item" href="{% url 'profile:logout' %}">{% trans 'Logout' %}</a>
+                <a class="dropdown-item" href="#" data-logout>{% trans 'Logout' %}</a>
+                {% include 'includes/logout_form.html' %}
 
             </div>
         </li>

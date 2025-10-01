@@ -25,7 +25,8 @@
                 <a class="dropdown-item" href="{% url 'profile:points' %}"><em class="material-icons mr-2">star</em> {% trans 'Points' %}</a>
                 <a class="dropdown-item" href="{% url 'profile:badges' %}"><em class="material-icons mr-2">group_work</em> {% trans 'Badges' %}</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="{% url 'profile:logout' %}"><em class="material-icons mr-2">exit_to_app</em> {% trans 'Logout' %}</a>
+                <a class="dropdown-item" href="#" data-logout><em class="material-icons mr-2">exit_to_app</em> {% trans 'Logout' %}</a>
+                {% include 'includes/logout_form.html' %}
 
                 </div>
               </li>
