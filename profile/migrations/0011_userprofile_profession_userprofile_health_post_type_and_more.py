@@ -20,9 +20,5 @@ class Migration(migrations.Migration):
             name='health_post_type',
             field=models.CharField(blank=True, default=None, max_length=100, null=True, verbose_name='Health Post Type'),
         ),
-        migrations.AddField(
-            model_name='userprofile',
-            name='hew_type',
-            field=models.CharField(blank=True, default=None, max_length=100, null=True, verbose_name='HEW Type'),
-        ),
+        
     ]

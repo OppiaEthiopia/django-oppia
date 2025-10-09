@@ -174,8 +174,7 @@ def get_user_from_uploaded_log(messages_delegate, user):
 def create_or_update_userprofile(messages_delegate, req_user, user_data):
     user_profile, created = UserProfile.objects.get_or_create(user=req_user)
 
-    if 'job_title' in user_data and user_data['job_title']:
-        user_profile.job_title = user_data['job_title']
+    
     if 'organisation' in user_data and user_data['organisation']:
         user_profile.organisation = user_data['organisation']
     if 'phoneno' in user_data and user_data['phoneno']:

@@ -9,7 +9,6 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user',
                     'can_upload',
                     'exclude_from_reporting',
-                    'job_title',
                     'organisation',
                     'phone_number',
                     'created',

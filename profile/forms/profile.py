@@ -48,7 +48,6 @@ class ProfileForm(forms.Form):
     last_name = forms.CharField(max_length=100,
                                 min_length=2,
                                 required=True)
-    job_title = forms.CharField(max_length=100, required=False)
     organisation = forms.CharField(max_length=100, required=False)
     grand_father = forms.CharField(max_length=100, required=False)
     participant_id = forms.CharField(max_length=100, required=False)
@@ -68,9 +67,8 @@ class ProfileForm(forms.Form):
     year_of_employment = forms.IntegerField(required=False)
     about = forms.CharField(widget=forms.Textarea, required=False)
     phone_number = forms.CharField(max_length=100, required=False)
-    Profession = forms.CharField(max_length=100, required=False)
+    profession = forms.CharField(max_length=100, required=False)
     health_post_type = forms.CharField(max_length=100, required=False)
-    hew_type = forms.CharField(max_length=100, required=False)
     hew_setting = forms.CharField(max_length=100, required=False)
     exclude_from_reporting = forms.BooleanField(
         required=False,
@@ -84,11 +82,11 @@ class ProfileForm(forms.Form):
             initial = kwargs.get('initial', {})
             # Populate all new UserProfile fields
             for field in [
-                'job_title', 'organisation', 'grand_father', 'participant_id', 
+                'organisation', 'grand_father', 'participant_id', 
                 'gender', 'education_level', 'region', 'region_uid', 'zone', 'zone_uid',
                 'woreda', 'woreda_uid', 'phcu', 'phcu_uid', 'health_post', 'healthpost_uid',
                 'year_of_birth', 'year_of_employment', 'about', 'phone_number',
-                'Profession', 'health_post_type', 'hew_type', 'hew_setting']:
+                'Profession', 'health_post_type', 'hew_setting']:
                 initial[field] = getattr(instance, field, '')
             kwargs['initial'] = initial
 
@@ -146,7 +144,6 @@ class ProfileForm(forms.Form):
                     field.widget.attrs.update({'readonly': 'readonly'})
 
         self.helper.layout.extend([
-            'job_title',
             'organisation',
             'grand_father',
             'participant_id',
@@ -166,15 +163,79 @@ class ProfileForm(forms.Form):
             'year_of_employment',
             'about',
             'phone_number',
-            'Profession',
+            'profession',
             'health_post_type',
-            'hew_type',
             'hew_setting',
         ])
 
         custom_fields = CustomField.objects.all().order_by('order')
-        for custom_field in custom_fields:
-            self.helper.layout.append(custom_field.id)
+        # Training Profile Table before Change Password
+        self.helper.layout.append(HTML('''
+    <div class="p-4">
+        {# Training Profile Table before Change Password #}
+        <h4>Training Profile</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <thead>
+            <thead>
+                <tr>
+                    <th>Training Date</th>
+                    <th>Module Type</th>
+                    <th>Custom Field 1</th>
+                    <th>Custom Field 2</th>
+                    <th>Custom Field 3</th>
+                    <th>Edit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for training_id, fields in customfields_by_training.items %}
+                    {% with training=fields.0.training_info %}
+                    <tr>
+                        <td>{% if training %}{{ training.training_date }}{% else %}N/A{% endif %}</td>
+                        <td>{% if training %}{{ training.module_type }}{% else %}N/A{% endif %}</td>
+                        <td>{% if fields|length > 0 %}{{ fields.0.get_value }}{% endif %}</td>
+                        <td>{% if fields|length > 1 %}{{ fields.1.get_value }}{% endif %}</td>
+                        <td>{% if fields|length > 2 %}{{ fields.2.get_value }}{% endif %}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editCustomFieldModal{{ training_id }}">Edit</button>
+                            <!-- Modal for editing custom fields -->
+                            <div class="modal fade" id="editCustomFieldModal{{ training_id }}" tabindex="-1" role="dialog" aria-labelledby="editCustomFieldModalLabel{{ training_id }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <form method="post" action="{% url 'profile:edit_customfield' training_id=view_user.id training_info_id=training_id %}">
+                                            {% csrf_token %}
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editCustomFieldModalLabel{{ training_id }}">Edit Custom Fields</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {% for field in fields %}
+                                                    <div class="form-group">
+                                                        <label>{{ field.key_name.label }}</label>
+                                                        <input type="text" class="form-control" name="customfield_{{ field.id }}" value="{{ field.get_value }}">
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% empty %}
+                    <tr><td colspan="6">No custom fields found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        '''))
 
         self.helper.layout.extend([
             Div(

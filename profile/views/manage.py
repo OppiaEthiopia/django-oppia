@@ -38,7 +38,6 @@ class UserList(StaffRequiredMixin, ExportAsCSVMixin, SafePaginatorMixin, ListVie
                         'first_name',
                         'last_name',
                         'email',
-                        'userprofile__job_title',
                         'userprofile__organisation',
                         'userprofile__phone_number']
 
