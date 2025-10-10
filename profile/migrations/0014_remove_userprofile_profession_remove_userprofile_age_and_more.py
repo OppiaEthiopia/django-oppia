@@ -10,24 +10,22 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='userprofile',
-            name='Profession',
-        ),
-        migrations.RemoveField(
-            model_name='userprofile',
-            name='age',
-        ),
+        
+        
         migrations.RemoveField(
             model_name='userprofile',
             name='job_title',
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
             model_name='userprofile',
-            name='organisation',
-            field=models.TextField(blank=True, default=None, null=True, verbose_name='Organisation Unit'),
+            name='hew_type',
         ),
-        migrations.AddField(
+       
+        migrations.RemoveField(
+            model_name='userprofile',
+            name='Profession',
+        ),
+         migrations.AddField(
             model_name='userprofile',
             name='profession',
             field=models.CharField(blank=True, default=None, max_length=100, null=True, verbose_name='profession'),
