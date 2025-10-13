@@ -139,7 +139,6 @@ class EditView(CanEditUserMixin, UpdateView):
             'first_name': self.object.first_name,
             'last_name': self.object.last_name,
             'api_key': key.key,
-            'job_title': user_profile.job_title,
             'organisation': user_profile.organisation,
             'grand_father': user_profile.grand_father,
             'participant_id': user_profile.participant_id,
@@ -159,9 +158,8 @@ class EditView(CanEditUserMixin, UpdateView):
             'year_of_employment': user_profile.year_of_employment,
             'about': user_profile.about,
             'phone_number': user_profile.phone_number,
-            'Profession': user_profile.Profession,
+            'profession': user_profile.profession,
             'health_post_type': user_profile.health_post_type,
-            'hew_type': user_profile.hew_type,
             'hew_setting': user_profile.hew_setting,
             'exclude_from_reporting': user_profile.exclude_from_reporting
         }
@@ -203,7 +201,7 @@ class EditView(CanEditUserMixin, UpdateView):
 
         user_profile, created = UserProfile.objects \
             .get_or_create(user=view_user)
-        user_profile.job_title = form.cleaned_data.get('job_title')
+        
         user_profile.organisation = form.cleaned_data.get('organisation')
         user_profile.phone_number = form.cleaned_data.get('phone_number')
 
