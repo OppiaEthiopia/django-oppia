@@ -48,8 +48,9 @@ class ProfileForm(forms.Form):
     last_name = forms.CharField(max_length=100,
                                 min_length=2,
                                 required=True)
-    organisation = forms.CharField(max_length=100, required=False)
     grand_father = forms.CharField(max_length=100, required=False)
+    organisation = forms.CharField(max_length=100, required=False)
+   
     participant_id = forms.CharField(max_length=100, required=False)
     gender = forms.CharField(max_length=50, required=False)
     education_level = forms.CharField(max_length=100, required=False)
@@ -82,11 +83,11 @@ class ProfileForm(forms.Form):
             initial = kwargs.get('initial', {})
             # Populate all new UserProfile fields
             for field in [
-                'organisation', 'grand_father', 'participant_id', 
-                'gender', 'education_level', 'region', 'region_uid', 'zone', 'zone_uid',
+                'grand_father', 'organisation', 'participant_id', 
+                'gender',  'region', 'education_level','region_uid', 'zone', 'zone_uid',
                 'woreda', 'woreda_uid', 'phcu', 'phcu_uid', 'health_post', 'healthpost_uid',
                 'year_of_birth', 'year_of_employment', 'about', 'phone_number',
-                'Profession', 'health_post_type', 'hew_setting']:
+                'profession', 'health_post_type', 'hew_setting']:
                 initial[field] = getattr(instance, field, '')
             kwargs['initial'] = initial
 
@@ -144,11 +145,15 @@ class ProfileForm(forms.Form):
                     field.widget.attrs.update({'readonly': 'readonly'})
 
         self.helper.layout.extend([
-            'organisation',
             'grand_father',
-            'participant_id',
             'gender',
+            'year_of_birth',
+            'year_of_employment',  
+            'phone_number',
+            'job_title',
             'education_level',
+            'profession',
+            'organisation',
             'region',
             'region_uid',
             'zone',
@@ -159,13 +164,9 @@ class ProfileForm(forms.Form):
             'phcu_uid',
             'health_post',
             'healthpost_uid',
-            'year_of_birth',
-            'year_of_employment',
-            'about',
-            'phone_number',
-            'profession',
             'health_post_type',
             'hew_setting',
+            'participant_id',
         ])
 
         custom_fields = CustomField.objects.all().order_by('order')

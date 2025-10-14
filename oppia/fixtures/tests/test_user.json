@@ -24,6 +24,7 @@
       "can_upload": false,
       "organisation": "",
       "user": 1,
+      "job_title": "",
       "created": "2022-03-10T07:00:00Z",
       "modified": "2022-03-10T07:00:00Z"
     },
