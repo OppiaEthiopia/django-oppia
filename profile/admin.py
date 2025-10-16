@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from profile.models import UserProfile, CustomField, UserProfileCustomField
+from profile.models import UserProfile, CustomField, UserProfileCustomField, TrainingInfo
 
 
 class UserProfileAdmin(admin.ModelAdmin):
@@ -38,7 +38,18 @@ class UserProfileCustomFieldAdmin(admin.ModelAdmin):
                     'modified')
     readonly_fields = ['user', 'key_name']
 
+class TrainingInfoAdmin(admin.ModelAdmin):
+    readonly_fields = [f.name for f in TrainingInfo._meta.fields]
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(CustomField, CustomFieldAdmin)
 admin.site.register(UserProfileCustomField, UserProfileCustomFieldAdmin)
+
+
+admin.site.register(TrainingInfo, TrainingInfoAdmin)

@@ -57,19 +57,41 @@
 			<li><code>username</code></li>
 			<li><code>firstname</code></li>
 			<li><code>lastname</code></li>
+			<li><code>module_type</code></li>
+			<li><code>training_date</code></li>
 		</ul>
 
 		<p>You may also optionally add the following columns/fields:</p>
 		<ul>
-			<li><code>password</code> (note: the password will not be overriden if the user already has one. In case of a new user, if you do not add a password one will be randomly generated)</li>
-			<li><code>email</code></li>
-			<li><code>phone_number</code></li>
-			<li><code>organisation</code></li>
-			<li><code>job_title</code></li>
+			<li><code>password</code>: Password (note: will not override if user already has one; random if new user and not provided)</li>
+			<li><code>grand_father</code>: Grand Father</li>
+			<li><code>email</code>: Email</li>
+			<li><code>gender</code>: Gender</li>
+			<li><code>phone_number</code>: Phone Number</li>
+			<li><code>year_of_birth</code>: Year of Birth</li>
+			<li><code>year_of_employment</code>: Year of Employment</li>
+			<li><code>profession</code>: Profession</li>
+			<li><code>education_level</code>: Education Level</li>
+			<li><code>organisation</code>: Organisation</li>
+			<li><code>region</code>: Region</li>
+			<li><code>region_uid</code>: Region Uid</li>
+			<li><code>zone</code>: Zone</li>
+			<li><code>zone_uid</code>: Zone Uid</li>
+			<li><code>woreda</code>: Woreda</li>
+			<li><code>woreda_uid</code>: Woreda Uid</li>
+			<li><code>phcu</code>: PHCU</li>
+			<li><code>phcu_uid</code>: PHCU Uid</li>
+			<li><code>health_post</code>: Health Post</li>
+			<li><code>healthpost_uid</code>: Health Post Uid</li>
+			<li><code>health_post_type</code>: Health Post Type</li>
+			<li><code>hew_setting</code>: HEW Setting</li>
+			<li><code>participant_id</code>: Participant ID</li>
 		{% endblocktrans %}
 			{% if custom_fields %}
 				{% for cf in custom_fields %}
-				<li><code>{{ cf.id }}</code>: {{cf.label}}</li>
+					{% if cf.id != 'module_type' and cf.id != 'training_date' %}
+						<li><code>{{ cf.id }}</code>: {{cf.label}}</li>
+					{% endif %}
 				{% endfor %}
 			{% endif %}
 		</ul>
