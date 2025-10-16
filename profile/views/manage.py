@@ -313,8 +313,7 @@ class UploadUsers(AdminRequiredMixin, FormView):
             from profile.models import TrainingInfo
             training_info, _ = TrainingInfo.objects.get_or_create(
                 training_date=training_date,
-                module_type=module_type,
-                defaults={"training_location": training_location}
+                module_type=module_type
             )
 
         for cf in custom_fields:
