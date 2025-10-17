@@ -215,19 +215,23 @@ class EditView(CanEditUserMixin, UpdateView):
             if (form.cleaned_data.get(custom_field.id) is not None
                 and form.cleaned_data.get(custom_field.id) != '') \
                     or custom_field.required is True:
-
-                profile_field, created = UserProfileCustomField.objects \
-                    .get_or_create(key_name=custom_field, user=view_user)
+                # Try to get the first matching record, or create if none exists
+                profile_field = UserProfileCustomField.objects.filter(key_name=custom_field, user=view_user).first()
+                if not profile_field:
+                    profile_field = UserProfileCustomField.objects.create(key_name=custom_field, user=view_user)
 
                 if custom_field.type == 'int':
-                    profile_field.value_int = \
-                        form.cleaned_data.get(custom_field.id)
+                    profile_field.value_int = form.cleaned_data.get(custom_field.id)
+                    profile_field.value_bool = None
+                    profile_field.value_str = ''
                 elif custom_field.type == 'bool':
-                    profile_field.value_bool = \
-                        form.cleaned_data.get(custom_field.id)
+                    profile_field.value_bool = form.cleaned_data.get(custom_field.id)
+                    profile_field.value_int = None
+                    profile_field.value_str = ''
                 else:
-                    profile_field.value_str = \
-                        form.cleaned_data.get(custom_field.id)
+                    profile_field.value_str = form.cleaned_data.get(custom_field.id)
+                    profile_field.value_int = None
+                    profile_field.value_bool = None
 
                 profile_field.save()
 
@@ -279,8 +283,8 @@ class ExportDataView(TemplateView):
         for cpf in custom_profile_fields:
             cp = {}
             cp['label'] = cpf.label
-            cp['value'] = UserProfileCustomField.objects.get(
-                key_name=cpf.id, user=user).get_value()
+            upcf = UserProfileCustomField.objects.filter(key_name=cpf.id, user=user).first()
+            cp['value'] = upcf.get_value() if upcf else ''
             custom_profile.append(cp)
         return profile, additional_profile, custom_profile
 
