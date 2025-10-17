@@ -192,8 +192,13 @@ class CourseResource(ModelResource):
                                     + " " \
                                     + course.user.last_name
             bundle.data['username'] = course.user.username
-            user_profile = getattr(course.user, 'userprofile', None)
-            bundle.data['organisation'] = user_profile.organisation if user_profile else 'MOH'
+            # Handle zero or multiple userprofiles (OneToOneField, but robust to data issues)
+            from profile.models import UserProfile
+            profiles = UserProfile.objects.filter(user=course.user)
+            if profiles.exists():
+                bundle.data['organisation'] = profiles.first().organisation
+            else:
+                bundle.data['organisation'] = 'MOH'
 
         if course.restricted:
             bundle.data['cohorts'] = list(CourseCohort.objects.filter(course=course).values_list('cohort', flat=True))
