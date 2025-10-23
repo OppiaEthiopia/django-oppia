@@ -12,7 +12,7 @@ class UploadProfileForm(forms.Form):
         error_messages={'required': _('Please select a file to upload')}, )
 
     only_update = forms.BooleanField(
-        initial=True,
+        initial=False,
         required=False,
         label=_('Only update data'),
         help_text=_("If a user already exists, only missing/blank fields will "
