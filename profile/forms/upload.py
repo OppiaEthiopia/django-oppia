@@ -19,7 +19,7 @@ class UploadProfileForm(forms.Form):
                     "be updated"))
 
     def __init__(self, *args, **kwargs):
-        super(UploadProfileForm, self).__init__(* args, ** kwargs)
+        super(UploadProfileForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_action = reverse('profile:upload')
         self.helper.form_class = 'form-horizontal'
@@ -33,3 +33,23 @@ class UploadProfileForm(forms.Form):
                 css_class='col-lg-offset-2 col-lg-4',
             ),
         )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        upload_file = cleaned_data.get('upload_file')
+        if upload_file:
+            import csv
+            import io
+            required_fields = ['username', 'firstname', 'lastname', 'module_type', 'training_date']
+            try:
+                decoded_file = upload_file.read().decode('utf-8')
+                reader = csv.DictReader(io.StringIO(decoded_file))
+                for i, row in enumerate(reader, start=1):
+                    for field in required_fields:
+                        if not row.get(field):
+                            raise forms.ValidationError(
+                                _(f"Row {i}: '{field}' is required.")
+                            )
+            except Exception as e:
+                raise forms.ValidationError(_(f"Error reading CSV file: {e}"))
+        return cleaned_data

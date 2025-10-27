@@ -72,9 +72,10 @@ class ExportAsCSVMixin(View):
         response.write(u'\ufeff'.encode('utf-8'))
         writer = csv.writer(response, dialect='excel', delimiter=str(','), quotechar=str('"'))
 
-        # If no field was selected, we export all of them
+        # If no field was selected, we export all available fields and all custom fields
         if filter_list is None or len(filter_list) == 0:
-            filter_list = self.available_fields
+            custom_field_ids = list(CustomField.objects.all().values_list('id', flat=True))
+            filter_list = self.available_fields + custom_field_ids
 
         final_fields = []
         header_row = []

@@ -34,13 +34,33 @@ class UserList(StaffRequiredMixin, ExportAsCSVMixin, SafePaginatorMixin, ListVie
     default_order = 'first_name'
 
     csv_filename = 'users'
-    available_fields = ['username',
-                        'first_name',
-                        'last_name',
-                        'email',
-                        'userprofile__job_title',
-                        'userprofile__organisation',
-                        'userprofile__phone_number']
+    available_fields = [
+        'username',
+        'first_name',
+        'last_name',
+        'email',
+        'userprofile__year_of_birth',
+        'userprofile__year_of_employment',
+        'userprofile__profession',
+        'userprofile__education_level',
+        'userprofile__organisation',
+        'userprofile__region',
+        'userprofile__region_uid',
+        'userprofile__zone',
+        'userprofile__zone_uid',
+        'userprofile__woreda',
+        'userprofile__woreda_uid',
+        'userprofile__phcu',
+        'userprofile__phcu_uid',
+        'userprofile__health_post',
+        'userprofile__healthpost_uid',
+        'userprofile__health_post_type',
+        'userprofile__hew_setting',
+        'userprofile__participant_id',
+        'userprofile__gender',
+        'userprofile__job_title',
+        'userprofile__phone_number'
+    ]
 
     def get_queryset(self):
         form = self.search_form(self.request.GET)
