@@ -22,8 +22,12 @@
 		</div>
 
 		<div class="col-sm-7 text-right">
+			{% if view_user.id %}
 			<a href="{% url 'profile:delete' view_user.id %}" class="btn btn-light mr-2 mb-3">{% trans 'Delete Account' %}</a>
+			{% endif %}
+			{% if view_user.id %}
 			<a href="{% url 'profile:user_regenerate_certificates' view_user.id %}"  class="btn btn-light mr-2 mb-3">{% trans 'Regenerate Certificates' %}</a>
+			{% endif %}
 			{% if view_user == request.user %}
 			<a href="#" class="btn btn-secondary mb-3" data-toggle="collapse" data-target="#export-data" aria-expanded="false">{% trans 'Export' %}</a>
 			{% endif %}
@@ -78,5 +82,8 @@
 </form>
 
 <div style="clear:both"></div>
+
+{# Custom Fields Table #}
+{% include "profile/customfield_table.html" with userprofilecustomfields_grouped=userprofilecustomfields_grouped %}
 
 {% endblock %}

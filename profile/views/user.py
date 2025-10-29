@@ -1,33 +1,142 @@
-from io import StringIO
-from urllib.parse import urlparse
-
+from django.views.decorators.csrf import csrf_exempt
+# All imports moved to the top for PEP 8 compliance
+from django.http import JsonResponse, HttpResponseRedirect, Http404
+from profile.models import UserProfileCustomField, CustomField, TrainingInfo, UserProfile
+from django.shortcuts import get_object_or_404, render
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.generic import ListView, UpdateView, FormView, TemplateView, DetailView
 from tastypie.models import ApiKey
-
 from helpers.mixins.SafePaginatorMixin import SafePaginatorMixin
 from helpers.mixins.TitleViewMixin import TitleViewMixin
 from oppia.mixins.PermissionMixins import CanEditUserMixin
 from oppia.models import Points, Award, Tracker, Course, CertificateTemplate
-from profile.forms import LoginForm, \
-    RegisterForm, \
-    ProfileForm, \
-    RegenerateCertificatesForm
-from profile.models import UserProfile, \
-    CustomField, \
-    UserProfileCustomField
+from profile.forms import LoginForm, RegisterForm, ProfileForm, RegenerateCertificatesForm
 from profile.utils import filter_redirect
 from quiz.models import QuizAttempt, QuizAttemptResponse
 from settings import constants
 from settings.models import SettingProperties
+from io import StringIO
+from urllib.parse import urlparse
+
+
+# AJAX group edit view for all UserProfileCustomFields in a training group
+@csrf_exempt
+def ajax_edit_userprofilecustomfield_group(request, training_info_id):
+    user_id = request.GET.get('user_id') or request.POST.get('user_id')
+    if user_id:
+        UserModel = get_user_model()
+        user = UserModel.objects.filter(pk=user_id).first()
+    else:
+        user = request.user
+    custom_fields = CustomField.objects.all().order_by('order')
+    upcfs_map = {}
+    upcfs = UserProfileCustomField.objects.filter(user=user, training_info_id=training_info_id)
+    for upcf in upcfs:
+        upcfs_map[str(upcf.key_name.id)] = upcf
+    upcf_list = []
+    for custom_field in custom_fields:
+        upcf = upcfs_map.get(str(custom_field.id))
+        if not upcf:
+            # Create a dummy instance for rendering only
+            from types import SimpleNamespace
+            upcf = SimpleNamespace(
+                key_name=custom_field,
+                value_str='',
+                value_int=None,
+                value_bool=None,
+                training_info_id=training_info_id
+            )
+        upcf_list.append(upcf)
+    if request.method == 'POST':
+        errors = {}
+        # Validate and save all custom field values for the user/training group
+        for upcf in upcf_list:
+            value = request.POST.get(f'value_{upcf.key_name.id}', None)
+            field_label = upcf.key_name.label
+            # Required field validation
+            if upcf.key_name.required and (value is None or value == ''):
+                errors[upcf.key_name.id] = f"{field_label} is required."
+                continue
+            # Type validation
+            if value is not None and value != '':
+                if upcf.key_name.type == 'int':
+                    try:
+                        value_int = int(value)
+                    except ValueError:
+                        errors[upcf.key_name.id] = f"{field_label} must be an integer."
+                        continue
+                elif upcf.key_name.type == 'bool':
+                    if value == 'true':
+                        value_bool = True
+                    elif value == 'false':
+                        value_bool = False
+                    else:
+                        errors[upcf.key_name.id] = f"{field_label} must be True or False."
+                        continue
+                else:
+                    value_str = value
+            # Save or create the model instance if no errors for this field
+            if upcf.__class__.__name__ == 'SimpleNamespace':
+                # Create new UserProfileCustomField
+                upcf_model = UserProfileCustomField(
+                    key_name=upcf.key_name,
+                    user=user,
+                    training_info_id=training_info_id
+                )
+            else:
+                upcf_model = upcf
+            if upcf.key_name.type == 'int':
+                upcf_model.value_int = int(value) if value not in [None, ''] else None
+                upcf_model.value_str = ''
+                upcf_model.value_bool = None
+            elif upcf.key_name.type == 'bool':
+                if value == 'true':
+                    upcf_model.value_bool = True
+                elif value == 'false':
+                    upcf_model.value_bool = False
+                else:
+                    upcf_model.value_bool = None
+                upcf_model.value_int = None
+                upcf_model.value_str = ''
+            else:
+                upcf_model.value_str = value
+                upcf_model.value_int = None
+                upcf_model.value_bool = None
+            if upcf.key_name.id not in errors:
+                upcf_model.save()
+        if errors:
+            # Do not clear the form, send errors back
+            return JsonResponse({'success': False, 'errors': errors})
+        # After saving, repopulate upcf_list with updated values
+        upcfs = UserProfileCustomField.objects.filter(user=user, training_info_id=training_info_id)
+        upcfs_map = {str(upcf.key_name.id): upcf for upcf in upcfs}
+        upcf_list = []
+        for custom_field in custom_fields:
+            upcf = upcfs_map.get(str(custom_field.id))
+            if not upcf:
+                from types import SimpleNamespace
+                upcf = SimpleNamespace(
+                    key_name=custom_field,
+                    value_str='',
+                    value_int=None,
+                    value_bool=None,
+                    training_info_id=training_info_id
+                )
+            upcf_list.append(upcf)
+        return JsonResponse({'success': True})
+    return render(request, 'profile/ajax_edit_userprofilecustomfield_group.html', {
+        'upcfs': upcf_list,
+        'custom_fields': custom_fields,
+        'training_info_id': training_info_id,
+        'user_id': user.id if user else None
+    })
+
 
 STR_COMMON_FORM = 'common/form/form.html'
 STR_OPPIA_HOME = 'oppia:index'
@@ -98,6 +207,20 @@ class RegisterView(TitleViewMixin, FormView):
 
 
 class EditView(CanEditUserMixin, UpdateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Group CustomFields by training_info_id for selected user
+        custom_fields = CustomField.objects.all().order_by('order')
+        upcfs = UserProfileCustomField.objects.filter(user=self.object)
+        grouped = {}
+        for upcf in upcfs:
+            tid = getattr(upcf, 'training_info_id', None)
+            if tid not in grouped:
+                grouped[tid] = []
+            cf = upcf.key_name
+            grouped[tid].append({'upcf': upcf, 'custom_field': cf})
+        context['customfields_grouped_by_training'] = grouped
+        return context
 
     model = User
     form_class = ProfileForm

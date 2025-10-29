@@ -1,0 +1,70 @@
+{% load i18n %}
+<form id="editCustomFieldGroupForm" method="post">
+    {% csrf_token %}
+    <h5>{% trans "Edit Custom Fields for Training Group" %} #{{ training_info_id }} | User ID: {{ user_id }}</h5>
+    <input type="hidden" name="user_id" value="{{ user_id }}">
+    <div class="row">
+        {% for custom_field in custom_fields %}
+            {% for upcf in upcfs %}
+                {% if upcf.key_name.id == custom_field.id %}
+                    {% with field=upcf %}
+                        <div class="mb-3 col-md-6">
+                            <label for="id_value_{{ field.key_name.id }}" class="form-label">{{ field.key_name.label }}</label>
+                            {% if field.key_name.type == 'int' %}
+                                <input type="number" class="form-control" name="value_{{ field.key_name.id }}" id="id_value_{{ field.key_name.id }}" value="{{ field.get_value }}">
+                            {% elif field.key_name.type == 'bool' %}
+                                <select class="form-select" name="value_{{ field.key_name.id }}" id="id_value_{{ field.key_name.id }}">
+                                    <option value="" {% if field.get_value is None %}selected{% endif %}>---</option>
+                                    <option value="true" {% if field.get_value == True %}selected{% endif %}>True</option>
+                                    <option value="false" {% if field.get_value == False %}selected{% endif %}>False</option>
+                                </select>
+                            {% else %}
+                                <input type="text" class="form-control" name="value_{{ field.key_name.id }}" id="id_value_{{ field.key_name.id }}" value="{{ field.get_value }}">
+                            {% endif %}
+                        </div>
+                    {% endwith %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+    </div>
+</form>
+<script>
+document.getElementById('editCustomFieldGroupForm').onsubmit = function(e) {
+    e.preventDefault();
+    const form = e.target;
+    fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Accept': 'application/json',
+        },
+        body: new FormData(form)
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+            // Close modal and update custom fields table only
+            const modal = document.getElementById('editCustomFieldModal');
+            if (modal) {
+                // Bootstrap 5 modal
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) bsModal.hide();
+            }
+            // Optionally, trigger a refresh of the custom fields table via AJAX here
+            // For now, reload only the table (if you want full AJAX, let me know)
+            const table = document.querySelector('#customfields-table');
+            if (table) {
+                // You can implement AJAX table reload here
+                // For now, just reload the page section if needed
+            }
+        }
+        if (data.errors) {
+            // Display validation errors (simple alert, can be improved)
+            let errorMsg = Object.values(data.errors).join('\n');
+            alert(errorMsg);
+        }
+      });
+};
+</script>

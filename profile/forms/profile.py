@@ -89,6 +89,17 @@ class ProfileForm(forms.Form):
                 'year_of_birth', 'year_of_employment', 'about', 'phone_number',
                 'profession', 'health_post_type', 'hew_setting']:
                 initial[field] = getattr(instance, field, '')
+            # Patch: Always set initial values for all custom fields
+            from profile.models import UserProfileCustomField
+            custom_fields = CustomField.objects.all().order_by('order')
+            for custom_field in custom_fields:
+                field_id = str(custom_field.id)
+                value = ''
+                if hasattr(instance, 'user'):
+                    upcf = UserProfileCustomField.objects.filter(user=instance.user, custom_field=custom_field).first()
+                    if upcf:
+                        value = upcf.value
+                initial[field_id] = value
             kwargs['initial'] = initial
 
         super(ProfileForm, self).__init__(*args, **kwargs)
@@ -150,7 +161,6 @@ class ProfileForm(forms.Form):
             'year_of_birth',
             'year_of_employment',  
             'phone_number',
-            'job_title',
             'education_level',
             'profession',
             'organisation',
@@ -171,7 +181,8 @@ class ProfileForm(forms.Form):
 
         custom_fields = CustomField.objects.all().order_by('order')
         for custom_field in custom_fields:
-            self.helper.layout.append(custom_field.id)
+            if str(custom_field.id) in self.fields:
+                self.helper.layout.append(str(custom_field.id))
         self.helper.layout.extend([
             Div(
                 HTML("""<h4 class='mt-5 mb-3'>"""

@@ -1,0 +1,81 @@
+{% load i18n %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>{% trans 'Training Info ID' %}</th>
+            <th>{% trans 'Training Date' %}</th>
+            <th>{% trans 'Module Type' %}</th>
+            <th>{% trans 'Training Center' %}</th>
+            <th>{% trans 'Edit' %}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for tid, group in customfields_grouped_by_training.items %}
+        {% if tid %}
+        <tr>
+            <td>{{ tid }}</td>
+            {% with first_upcf=group.0.upcf %}
+                <td>{{ first_upcf.training_info.training_date }}</td>
+                <td>{{ first_upcf.training_info.module_type }}</td>
+                {% for item in group %}
+                    {% if item.custom_field.id == 'training_center' %}
+                        <td>{{ item.upcf.get_value }}</td>
+                    {% endif %}
+                {% endfor %}
+            {% endwith %}
+            <td> 
+                <button type="button" class="btn   btn-primary  btn-sm" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#editCustomFieldModal" 
+                        data-url="{% url 'profile:ajax_edit_userprofilecustomfield_group' tid %}?user_id={{ view_user.id }}">
+                    Edit 
+                </button>
+               
+            </td>
+        </tr>
+        {% endif %}
+    {% empty %}
+        <tr><td colspan="4" class="text-center text-muted">No custom fields found.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<!-- Modal for AJAX Edit -->
+<div class="modal fade" id="editCustomFieldModal" tabindex="-1" aria-labelledby="editCustomFieldModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg rounded-3 border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editCustomFieldModalLabel">Edit Custom Field</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="editCustomFieldFormContainer">
+                <div class="text-center py-5 text-muted">Loading form...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const editModal = document.getElementById('editCustomFieldModal');
+    const formContainer = document.getElementById('editCustomFieldFormContainer');
+
+    editModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const url = button.getAttribute('data-url');
+
+        // Show loading while fetching
+        formContainer.innerHTML = "<div class='text-center py-5 text-muted'>Loading...</div>";
+
+        // Fetch form content via AJAX
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                formContainer.innerHTML = html;
+            })
+            .catch(() => {
+                formContainer.innerHTML = "<div class='text-danger text-center'>Error loading form.</div>";
+            });
+    });
+});
+</script>

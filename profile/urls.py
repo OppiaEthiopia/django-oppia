@@ -66,4 +66,6 @@ urlpatterns = [
     path('delete/<int:user_id>/', profile_views.delete_account_view, name="delete"),
     path('delete/complete/', profile_views.DeleteAccountComplete.as_view(), name="delete_complete"),
     path('export/mydata/<data_type>', profile_views.ExportDataView.as_view(), name="export_mydata"),
+     path('ajax/edit-userprofilecustomfield-group/<int:training_info_id>/', profile_views.ajax_edit_userprofilecustomfield_group, name='ajax_edit_userprofilecustomfield_group'),
+
 ]
