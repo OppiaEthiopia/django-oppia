@@ -179,10 +179,10 @@ class ProfileForm(forms.Form):
             'participant_id',
         ])
 
-        custom_fields = CustomField.objects.all().order_by('order')
-        for custom_field in custom_fields:
-            if str(custom_field.id) in self.fields:
-                self.helper.layout.append(str(custom_field.id))
+        # custom_fields = CustomField.objects.all().order_by('order')
+        # for custom_field in custom_fields:
+        #     if str(custom_field.id) in self.fields:
+        #         self.helper.layout.append(str(custom_field.id))
         self.helper.layout.extend([
             Div(
                 HTML("""<h4 class='mt-5 mb-3'>"""

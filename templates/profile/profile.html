@@ -4,86 +4,80 @@
 {% load display_functions %}
 
 {% block extra_head_title %}
-	{% trans 'Profile' %}
+    {% trans 'Profile' %}
 {% endblock extra_head_title %}
-
 
 {% block header %}
 <div class="jumbotron mb-2">
-	<div class="row">
-		<div class="col-sm-5">
-			<h3>
-				{% if view_user == request.user %}
-				Profile
-				{% else %}
-				{{ view_user.first_name }} {{ view_user.last_name }}
-				{% endif %}
-			</h3>
-		</div>
+    <div class="row">
+        <div class="col-sm-5">
+            <h3>
+                {% if view_user == request.user %}
+                Profile
+                {% else %}
+                {{ view_user.first_name }} {{ view_user.last_name }}
+                {% endif %}
+            </h3>
+        </div>
 
-		<div class="col-sm-7 text-right">
-			{% if view_user.id %}
-			<a href="{% url 'profile:delete' view_user.id %}" class="btn btn-light mr-2 mb-3">{% trans 'Delete Account' %}</a>
-			{% endif %}
-			{% if view_user.id %}
-			<a href="{% url 'profile:user_regenerate_certificates' view_user.id %}"  class="btn btn-light mr-2 mb-3">{% trans 'Regenerate Certificates' %}</a>
-			{% endif %}
-			{% if view_user == request.user %}
-			<a href="#" class="btn btn-secondary mb-3" data-toggle="collapse" data-target="#export-data" aria-expanded="false">{% trans 'Export' %}</a>
-			{% endif %}
-		</div>
-	</div>
-	{% if user == request.user %}
-	<div id="export-data" class="collapse my-3">
-            <h5>{% trans 'Export data' %}</h5>
-			<a href="{% url 'profile:export_mydata' 'profile' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Profile' %} <em class="fas fa-external-link-alt ml-2"></em></a>
-			<a href="{% url 'profile:export_mydata' 'activity' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Course Activity' %} <em class="fas fa-external-link-alt ml-2"></em></a>
-			<a href="{% url 'profile:export_mydata' 'quiz' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Quiz Attempts' %} <em class="fas fa-external-link-alt ml-2"></em></a>
-			<a href="{% url 'profile:export_mydata' 'points' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Points' %} <em class="fas fa-external-link-alt ml-2"></em></a>
-			<a href="{% url 'profile:export_mydata' 'badges' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Badges' %} <em class="fas fa-external-link-alt ml-2"></em></a>
+        <div class="col-sm-7 text-right">
+            {% if view_user.id %}
+            <a href="{% url 'profile:delete' view_user.id %}" class="btn btn-light mr-2 mb-3">{% trans 'Delete Account' %}</a>
+            {% endif %}
+            <a href="{% url 'profile:user_regenerate_certificates' view_user.id %}" class="btn btn-light mr-2 mb-3">{% trans 'Regenerate Certificates' %}</a>
+            {% if view_user == request.user %}
+            <a href="#" class="btn btn-secondary mb-3" data-toggle="collapse" data-target="#export-data" aria-expanded="false">{% trans 'Export' %}</a>
+            {% endif %}
+        </div>
     </div>
-	{% endif %}
 
+    {% if user == request.user %}
+    <div id="export-data" class="collapse my-3">
+        <h5>{% trans 'Export data' %}</h5>
+        <a href="{% url 'profile:export_mydata' 'profile' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Profile' %} <em class="fas fa-external-link-alt ml-2"></em></a>
+        <a href="{% url 'profile:export_mydata' 'activity' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Course Activity' %} <em class="fas fa-external-link-alt ml-2"></em></a>
+        <a href="{% url 'profile:export_mydata' 'quiz' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Quiz Attempts' %} <em class="fas fa-external-link-alt ml-2"></em></a>
+        <a href="{% url 'profile:export_mydata' 'points' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Points' %} <em class="fas fa-external-link-alt ml-2"></em></a>
+        <a href="{% url 'profile:export_mydata' 'badges' %}" class="btn btn-light mr-2" target="_blank" rel="noopener">{% trans 'Export Badges' %} <em class="fas fa-external-link-alt ml-2"></em></a>
+    </div>
+    {% endif %}
 </div>
 {% endblock header %}
 
 {% block content %}
 <form method="post" class="shadow-sm" style="margin-top:-1.5rem;">
-<div class="jumbotron p-4 bg-light shadow-none">
+    <div class="jumbotron p-4 bg-light shadow-none">
+        {% include "includes/messages.html" %}
 
-	{% include "includes/messages.html" %}
+        <div class="row">
+            {% if form.gravatar %}
+            <div class="col-md-2 p-0">
+                {% crispy form form.gravatar %}
+            </div>
+            {% endif %}
+            <div class="{% if form.gravatar %}col-md-10 {% else %} col-md-12 {% endif %}">
+                {{ form.first_name|as_crispy_field }}
+                {{ form.last_name|as_crispy_field }}
+                {{ form.email|as_crispy_field }}
+            </div>
+        </div>
 
-<div class="row">
-	{% if form.gravatar %}
-	<div class="col-md-2 p-0">
-		{% crispy form form.gravatar %}
-	</div>
-	{% endif %}
-	<div class="{% if form.gravatar %}col-md-10 {% else %} col-md-12 {% endif %}">
-		{{ form.first_name|as_crispy_field}}
-		{{ form.last_name|as_crispy_field}}
-		{{ form.email|as_crispy_field}}
-	</div>
-</div>
-{% if form.gravatar %}<hr>{% endif %}
-{{ form.username|as_crispy_field}}
-{{ form.api_key|as_crispy_field}}
+        {% if form.gravatar %}<hr>{% endif %}
+        {{ form.username|as_crispy_field }}
+        {{ form.api_key|as_crispy_field }}
 
-{% if request.user.is_staff %}
-	{{ form.exclude_from_reporting|as_crispy_field}}
-{% endif %}
+        {% if request.user.is_staff %}
+            {{ form.exclude_from_reporting|as_crispy_field }}
+        {% endif %}
+    </div>
 
-</div>
+    {# ✅ Move the custom fields table right here — after the forms, before the save button #}
+    {% include "profile/customfield_table.html" with userprofilecustomfields_grouped=userprofilecustomfields_grouped %}
 
-<div class="p-4">
-{% crispy form form.helper %}
-</div>
-
+    <div class="p-4">
+        {% crispy form form.helper %}
+    </div>
 </form>
 
 <div style="clear:both"></div>
-
-{# Custom Fields Table #}
-{% include "profile/customfield_table.html" with userprofilecustomfields_grouped=userprofilecustomfields_grouped %}
-
 {% endblock %}
