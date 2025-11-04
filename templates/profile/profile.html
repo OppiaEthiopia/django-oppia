@@ -71,13 +71,14 @@
         {% endif %}
     </div>
 
-    {# ✅ Move the custom fields table right here — after the forms, before the save button #}
-    {% include "profile/customfield_table.html" with userprofilecustomfields_grouped=userprofilecustomfields_grouped %}
 
     <div class="p-4">
         {% crispy form form.helper %}
     </div>
 </form>
+
+{# Move the custom fields table outside the main form #}
+{% include "profile/customfield_table.html" with userprofilecustomfields_grouped=userprofilecustomfields_grouped %}
 
 <div style="clear:both"></div>
 {% endblock %}

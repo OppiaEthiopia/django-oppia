@@ -1,7 +1,10 @@
-$(function(){
-    $('[data-toggle="tooltip"]').tooltip();
 
-    initElems($('body'));
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    // If you have other initializations, add them here
 });
 
 
@@ -13,7 +16,10 @@ $(function(){
         resultsContainer.addClass('loading-container');
         $.get(url, {}, function(data){
             resultsContainer.find('.results').html(data);
-            resultsContainer.find('[data-toggle="tooltip"]').tooltip();
+            var tooltipTriggerList = [].slice.call(resultsContainer.find('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
             resultsContainer.find(".link-row").click(function() {
                 window.location = $(this).data("href");
             });

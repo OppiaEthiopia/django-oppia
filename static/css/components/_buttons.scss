@@ -12,7 +12,7 @@
     margin: 20px 0 20px 50px;
 }
 
-[data-toggle="collapse"]{
+[data-bs-toggle="collapse"]{
     &:not(.collapsed) .expand-btn{
         transform:rotate(180deg);
     }
