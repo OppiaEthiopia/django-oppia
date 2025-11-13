@@ -5,6 +5,13 @@ document.addEventListener('DOMContentLoaded', function () {
         new bootstrap.Tooltip(tooltipTriggerEl);
     });
     // If you have other initializations, add them here
+    // Delegated click handler for .link-row (user list rows)
+    $(document).on('click', '.link-row', function(e) {
+         var target = $(e.target);
+         if (!target.is('button') && !target.parents('button').length && !target.is('a') && !target.parents('a').length){
+             window.location = $(this).data('href');
+         }
+    });
 });
 
 

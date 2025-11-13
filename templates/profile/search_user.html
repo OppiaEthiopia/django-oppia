@@ -18,7 +18,7 @@
                   <input type="text" name="q" {% if quicksearch %}value="{{ quicksearch }}" {% endif %}class="form-control" aria-label="{% trans 'Search' %}" placeholder="{% trans 'Search...' %}">
                  <div class="btn-group mx-3" role="group" aria-label="Basic example">
                      <button class="btn btn-primary" type="submit" ><em class="fas fa-search"></em></button>
-                     <button class="btn btn-secondary py-3 pr-5 {% if not advanced_search %}collapsed{% endif %}" type="button" data-toggle="collapse" data-target="#advanced-search" aria-expanded="false" aria-controls="collapseExample"><span>Advanced search</span> <em class="fas fa-chevron-down expand-btn ml-2"></em></button>
+                     <button class="btn btn-secondary py-3 pr-5 {% if not advanced_search %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#advanced-search" aria-expanded="false" aria-controls="collapseExample"><span>Advanced search</span> <em class="fas fa-chevron-down expand-btn ml-2"></em></button>
 
                  </div>
                    <a class="btn btn-light" type="button" href="{% url 'profile:add' %}"><em class="material-icons mr-2">add</em> Add user</a>
