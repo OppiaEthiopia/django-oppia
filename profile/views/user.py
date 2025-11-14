@@ -298,17 +298,9 @@ class EditView(CanEditUserMixin, UpdateView):
 
     def form_valid(self, form):
         if self.allow_profile_editing():
-            self.edit_form_process(form, self.object)
+            form.save(user=self.object)
             messages.success(self.request, _(u"Profile updated"))
-
-        # if password should be changed
-        password = form.cleaned_data.get("password", )
-        if password:
-            self.object.set_password(password)
-            self.object.save()
-            messages.success(self.request, _(u"Password updated"))
-
-        return self.render_to_response(self.get_context_data(form=form))
+        return HttpResponseRedirect(self.get_success_url())
 
     def allow_profile_editing(self):
         return self.allow_edit or self.request.user.is_staff

@@ -19,6 +19,50 @@ from settings.models import SettingProperties
 
 
 class ProfileForm(forms.Form):
+
+    def save(self, user=None):
+        """
+        Save the form data to the user and user profile.
+        If user is not provided, use self.instance if available.
+        """
+        if user is None:
+            user = getattr(self, 'instance', None)
+        if user is None:
+            raise ValueError("User instance must be provided to save the profile form.")
+
+        # Update User fields
+        user.email = self.cleaned_data.get('email', user.email)
+        user.first_name = self.cleaned_data.get('first_name', user.first_name)
+        user.last_name = self.cleaned_data.get('last_name', user.last_name)
+        user.save()
+
+        # Update UserProfile fields
+        from profile.models import UserProfile
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+        for field in [
+            'grand_father', 'organisation', 'participant_id', 'gender', 'education_level',
+            'region', 'region_uid', 'zone', 'zone_uid', 'woreda', 'woreda_uid', 'phcu',
+            'phcu_uid', 'health_post', 'healthpost_uid', 'year_of_birth', 'year_of_employment',
+            'about', 'phone_number', 'profession', 'health_post_type', 'hew_setting', 'exclude_from_reporting']:
+            if field in self.cleaned_data:
+                setattr(user_profile, field, self.cleaned_data[field])
+        user_profile.save()
+
+        # Save custom fields
+        from profile.models import UserProfileCustomField, CustomField
+        custom_fields = CustomField.objects.all()
+        for custom_field in custom_fields:
+            value = self.cleaned_data.get(str(custom_field.id), None)
+            if value is not None:
+                upcf, _ = UserProfileCustomField.objects.get_or_create(user=user, custom_field=custom_field)
+                upcf.value = value
+                upcf.save()
+
+        # Optionally handle password
+        password = self.cleaned_data.get('password', None)
+        if password:
+            user.set_password(password)
+            user.save()
     api_key = forms.CharField(widget=forms.TextInput(attrs={'readonly':
                                                             'readonly'}),
                               required=False,
@@ -109,7 +153,7 @@ class ProfileForm(forms.Form):
         email = userdata.get('email', None)
         username = userdata.get('username', None)
 
-        helpers.custom_fields(self)
+        # Do not add any custom fields for now (isolate the problem)
 
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
@@ -155,29 +199,14 @@ class ProfileForm(forms.Form):
                 if not key.startswith('password'):
                     field.widget.attrs.update({'readonly': 'readonly'})
 
-        self.helper.layout.extend([
-            'grand_father',
-            'gender',
-            'year_of_birth',
-            'year_of_employment',  
-            'phone_number',
-            'education_level',
-            'profession',
-            'organisation',
-            'region',
-            'region_uid',
-            'zone',
-            'zone_uid',
-            'woreda',
-            'woreda_uid',
-            'phcu',
-            'phcu_uid',
-            'health_post',
-            'healthpost_uid',
-            'health_post_type',
-            'hew_setting',
-            'participant_id',
-        ])
+        # Only add fields to the layout that are actually present in self.fields
+        for field_name in [
+            'grand_father', 'gender', 'year_of_birth', 'year_of_employment', 'phone_number',
+            'education_level', 'profession', 'organisation', 'region', 'region_uid', 'zone',
+            'zone_uid', 'woreda', 'woreda_uid', 'phcu', 'phcu_uid', 'health_post',
+            'healthpost_uid', 'health_post_type', 'hew_setting', 'participant_id']:
+            if field_name in self.fields:
+                self.helper.layout.append(field_name)
 
         # custom_fields = CustomField.objects.all().order_by('order')
         # for custom_field in custom_fields:

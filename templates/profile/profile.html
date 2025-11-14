@@ -46,7 +46,17 @@
 
 {% block content %}
 <form method="post" class="shadow-sm" style="margin-top:-1.5rem;">
+    {% csrf_token %}
     <div class="jumbotron p-4 bg-light shadow-none">
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                {% for field, errors in form.errors.items %}
+                    <li><strong>{{ field|capfirst }}:</strong> {{ errors|striptags }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
         {% include "includes/messages.html" %}
 
         <div class="row">
