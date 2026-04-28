@@ -54,7 +54,23 @@ class ProfileForm(forms.Form):
         for custom_field in custom_fields:
             value = self.cleaned_data.get(str(custom_field.id), None)
             if value is not None:
-                upcf, _ = UserProfileCustomField.objects.get_or_create(user=user, custom_field=custom_field)
+                qs = UserProfileCustomField.objects.filter(
+                    user=user,
+                    custom_field=custom_field
+                ).order_by("id")
+
+                if qs.exists():
+                    upcf = qs.first()
+
+                    # Clean duplicate records automatically.
+                    if qs.count() > 1:
+                        qs.exclude(id=upcf.id).delete()
+                else:
+                    upcf = UserProfileCustomField.objects.create(
+                        user=user,
+                        custom_field=custom_field
+                    )
+
                 upcf.value = value
                 upcf.save()
 
