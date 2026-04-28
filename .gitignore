@@ -24,3 +24,6 @@ oppiamobile/settings_secret.py
 /db.sqlite3
 /*.sock
 /.pytest_cache/
+
+appentrypoint.sh
+
