@@ -198,10 +198,11 @@ class UserProfileCustomField(models.Model):
 
     @staticmethod
     def get_user_value(user, key_name):
-        try:
-            return UserProfileCustomField.objects.get(key_name=key_name, user=user).get_value()
-        except UserProfileCustomField.DoesNotExist:
-            return None
+        # Select the most recently created field if multiple exist
+        obj = UserProfileCustomField.objects.filter(key_name=key_name, user=user).order_by('-created').first()
+        if obj:
+            return obj.get_value()
+        return None
 
     def get_value(self):
         if self.value_bool is not None:
